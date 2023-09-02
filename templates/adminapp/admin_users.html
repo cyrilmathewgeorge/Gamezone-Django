@@ -1,0 +1,43 @@
+{% extends 'adminapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<br>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="card py-3 mb-4">
+        <h5 class="card-header">Customers</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.mobile }}</td>
+                        <td>
+                            {% if user.is_active %}
+                                <a href="{% url 'block_user' user.id %}" class="btn btn-danger">Block</a>
+                            {% else %}
+                                <a href="{% url 'unblock_user' user.id %}" class="btn btn-success">Unblock</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -2682,8 +2682,8 @@ fieldset:disabled a.btn {
 }
 
 .btn-outline-primary {
-  color: #3167eb;
-  border-color: #3167eb;
+  color: #f1f1f1;
+  border-color: #eff0f1;
 }
 .btn-outline-primary:hover {
   color: #fff;
@@ -10017,7 +10017,7 @@ a.text-gray-light:hover, a.text-gray-light:focus {
 }
 
 .text-muted {
-  color: #969696 !important;
+  color: #ffffff !important;
 }
 
 .text-black-50 {

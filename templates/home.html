@@ -5,6 +5,7 @@
 {% block content%}
 <!-- ========================= SECTION PAGETOP ========================= -->
 <section class="section-pagetop bg">
+	{% include 'includes/alerts.html' %}
 <div class="container">
 	<div class="intro-banner-wrap ">
         <img src="{% static 'images/banner/1.jpg' %}" class="img-fluid rounded" >
@@ -91,7 +92,7 @@
 
 <header class="border-bottom mb-4 pb-3">
 		<div class="form-inline">
-			<span class="mr-md-auto">32 Items found </span>
+			<span class="mr-md-auto">{{ product_count }}</span>
 			
 		</div>
 </header><!-- sect-heading -->

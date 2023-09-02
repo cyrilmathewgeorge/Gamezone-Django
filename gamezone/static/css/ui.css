@@ -425,6 +425,7 @@ p:last-child {
   position: relative;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  background-color: #000;
 }
 
 .brand-wrap .logo, .navbar-brand .logo {
@@ -447,13 +448,13 @@ p:last-child {
   position: relative;
 }
 .widget-header a {
-  color: #343a40;
+  color: #f8f8f8;
 }
 .widget-header a:hover {
   color: #3167eb;
 }
 .widget-header i {
-  color: #969696;
+  color: #f5f4f4;
 }
 .widget-header form {
   min-width: 280px;
@@ -473,6 +474,12 @@ p:last-child {
 /* desktop only */
 /* desktop only .end */
 /* ================ SECTION-FOOTER ==================  */
+.section-footer{
+  background-color: #000;
+}
+.section-footer p{
+  color: white;
+}
 .section-footer ul li {
   margin-bottom: 5px;
 }
@@ -1345,6 +1352,7 @@ a[class*=card]:hover .title {
 /* ================ PAGES HEADER ================== */
 .section-pagetop {
   padding: 45px 0;
+  background-color: #000;
 }
 
 /* ================== PAGE DETAILS ==================  */

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import RegistrationForm
 from .models import Account
 from django.contrib import messages, auth
+from . import verify
 # Create your views here.
 def register(request):
     if request.method == "POST":
@@ -13,18 +14,62 @@ def register(request):
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             username = email.split("@")[0]
-            user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
-            user.phone_number = phone_number
-            user.is_active = True
-            user.save()
+            
+            if Account.objects.filter(username=username).exists():
+                messages.warning(request, "Username is already taken")
+                return redirect('register')
+            
+            if Account.objects.filter(email=email).exists():
+                messages.warning(request, "Email is already taken")
+                return redirect('register')
+            
+            otp = verify.generate_otp()
+            print("Generated OTP:", otp)
+            verify.send_otp(phone_number, otp)  
+            
+            request.session["signup_user_data"] = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "username" : username,
+                "phone_number": phone_number,
+                "password": password,
+                "otp": otp,
+            }
+
             messages.success(request, 'Registration Successful')
-            return redirect('register')
+            return redirect('signup_otp')  
     else:
         form = RegistrationForm()
     context = {
-        'form' : form,
+        'form': form,
     }
     return render(request, 'accounts/register.html', context)
+
+def signup_otp(request):
+    if request.method == "POST":
+        entered_otp = request.POST.get("otp")
+        stored_data = request.session.get("signup_user_data")
+        
+        print(entered_otp, stored_data['otp'])
+        
+        if verify.check_otp(stored_data["phone_number"], entered_otp):
+            user = Account(
+                first_name=stored_data["first_name"],
+                last_name=stored_data["last_name"],
+                username=stored_data["username"],
+                email=stored_data["email"],
+                phone_number=stored_data["phone_number"]
+            )
+            user.set_password(stored_data["password"])
+            user.is_active = True
+            user.save()
+            print('inside the if')
+            del request.session["signup_user_data"]
+            
+            return redirect("login")
+
+    return render(request, "accounts/signup_otp.html")
 
 def login(request):
     if request.method == 'POST':

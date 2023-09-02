@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'category',
     'accounts',
     'store',
+    'adminapp',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,7 @@ from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
+
+TWILIO_ACCOUNT_SID = "AC93c1b126bdec0ba0665c8ae09d021836"
+TWILIO_AUTH_TOKEN = "37b64f3d6753982bcb36fba9a63690e4"
+TWILIO_VERIFY_SID = "VA87e822fb56587f8d10161cbe045db2bb"
