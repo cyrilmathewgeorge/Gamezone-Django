@@ -26,7 +26,7 @@
                         <td>{{ category.id }}</td>
                         <td>{{ category.category_name }}</td>
                         <td>
-                            {% if product.image %}
+                            {% if category.category_images.url %}
                             <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
                                 <li class="avatar avatar-xs pull-up">
                                     <img src="{{ category.category_images.url }}" alt="Category Image" class="rounded-circle" />

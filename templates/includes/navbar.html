@@ -13,7 +13,7 @@
     <div class="row align-items-center">
         <div class="col-lg-2 col-md-3 col-6">
             <a href="{% url 'home' %}" class="brand-wrap">
-                <img class="logo" src="{%static './images/logo.png'%}">
+                <img class="logo" src="{%static './images/logos.png'%}">
             </a> <!-- brand-wrap.// -->
         </div>
         <div class="col-lg col-sm col-md col-6 flex-grow-0">
@@ -31,9 +31,9 @@
         </div> <!-- col.// -->
         <a href="{% url 'store' %}" class="btn btn-outline-primary">Store</a>
         <div class="col-lg  col-md-6 col-sm-12 col">
-            <form action="#" class="search">
+            <form method="GET" action="{% url 'search' %}" class="search">
                 <div class="input-group w-100">
-                    <input type="text" class="form-control" style="width:60%;" placeholder="Search">
+                    <input type="text" class="form-control" style="width:60%;" placeholder="Search" name='keyword'>
                     
                     <div class="input-group-append">
                       <button class="btn btn-dark" type="submit">
@@ -64,6 +64,10 @@
                         {% endif %}
                         <a href="./cart.html" class="widget-header pl-3 ml-3">
                             <div class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></div>
+                            <span class="badge badge-pill badge-danger notify">0</span>
+                        </a>
+                        <a href="./cart.html" class="widget-header pl-3 ml-3">
+                            <div class="icon icon-sm rounded-circle border"><i class="fa fa-heart"></i></div>
                             <span class="badge badge-pill badge-danger notify">0</span>
                         </a>
                     </div> <!-- widgets-wrap.// -->

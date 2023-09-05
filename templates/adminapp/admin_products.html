@@ -33,11 +33,13 @@
                             <td>{{ product.id }}</td>
                             <td>{{ product.product_name }}</td>
                             <td>
-                                {% if product.image %}
+                                {% if product.images.all %}
                                     <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                        {% for image in product.images.all %}
                                             <li class="avatar avatar-xs pull-up">
-                                                <img src="{{ product.image.url }}" alt="Product Image" class="rounded-circle" />
+                                                <img src="{{ image.image.url }}" alt="Product Image" class="rounded-circle" />
                                             </li>
+                                        {% endfor %}
                                     </ul>
                                 {% else %}
                                     No images available

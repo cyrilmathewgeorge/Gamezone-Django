@@ -43,7 +43,7 @@
 		</div>
 	</article> <!-- filter-group  .// -->
 	
-	<article class="filter-group">
+	<!--<article class="filter-group">
 		<header class="card-header">
 			<a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true" class="">
 				<i class="icon-control fa fa-chevron-down"></i>
@@ -56,7 +56,7 @@
 				<div class="form-row">
 				<div class="form-group col-md-6">
 				  <label>Min</label>
-				  <!-- <input class="form-control" placeholder="$0" type="number"> -->
+				   <input class="form-control" placeholder="$0" type="number"> 
 				  	<select class="mr-2 form-control">
 						<option value="0">$0</option>
 						<option value="50">$50</option>
@@ -79,11 +79,11 @@
 						<option value="2000">$2000+</option>
 					</select>
 				</div>
-				</div> <!-- form-row.// -->
+				</div> form-row.//
 				<button class="btn btn-block btn-primary">Apply</button>
-			</div><!-- card-body.// -->
+			</div> card-body.// 
 		</div>
-	</article> <!-- filter-group .// -->
+	</article>--> <!-- filter-group .// -->
 	
 </div> <!-- card.// -->
 
@@ -92,7 +92,7 @@
 
 <header class="border-bottom mb-4 pb-3">
 		<div class="form-inline">
-			<span class="mr-md-auto">{{ product_count }}</span>
+			<span class="mr-md-auto"></span>
 			
 		</div>
 </header><!-- sect-heading -->
@@ -101,6 +101,9 @@
 	{% for product in products %}
 	<div class="col-md-4">
 		<figure class="card card-product-grid">
+			<span class="position-absolute m-2" style="top: 0; left: 0;">
+                <i class="fa fa-heart-O fa-2x"></i>
+            </span>
 			<a href="{{ product.get_url }}" class="img-wrap">
 				
 				<img src="{{ product.image.url }}">
@@ -110,10 +113,9 @@
 				<div class="fix-height">
 					<a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
 					<div class="price-wrap mt-2">
-						<span class="price">{{ product.price }}</span>
+						<span class="price">Price:  ${{ product.price }}</span>
 					</div> <!-- price-wrap.// -->
 				</div>
-				<a href="#" class="btn btn-block btn-primary">Add to cart </a>
 			</figcaption>
 		</figure>
 	</div> <!-- col.// -->
