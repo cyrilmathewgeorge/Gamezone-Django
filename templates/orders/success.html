@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h1>Payment Successful!</h1>
+                <p>Your order has been placed successfully. Thank you for shopping with us.</p>
+                <h2>Order Details</h2>
+                <p>Order ID: {{ order.order_number }}</p>
+                <p>Order Total: $ {{ order.order_total|floatformat:2 }}</p>
+                <!-- Display order product details -->
+                <h3>Order Products</h3>
+                <ul>
+                    {% for order_product in order_products %}
+                    <li>
+                        Product: {{ order_product.product.title }}
+                        Variation: {% for variation in order_product.variation.all %}{{ variation.variation_value }}{% endfor %}
+                        Quantity: {{ order_product.quantity }}
+                        Price: $ {{ order_product.product_price|floatformat:2 }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

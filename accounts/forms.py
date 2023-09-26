@@ -32,3 +32,13 @@ class RegistrationForm(forms.ModelForm):
             raise forms.ValidationError(
                 " Password and Confirm Password does not match!"
             )
+
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ['first_name', 'last_name', 'email']
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileEditForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'

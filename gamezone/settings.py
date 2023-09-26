@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'accounts',
     'store',
     'adminapp',
+    'cart',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'category.context_processors.menu_links',
+                'cart.context_processor.counter',
             ],
         },
     },
@@ -150,5 +153,5 @@ MESSAGE_TAGS = {
 }
 
 TWILIO_ACCOUNT_SID = "AC93c1b126bdec0ba0665c8ae09d021836"
-TWILIO_AUTH_TOKEN = "eb0ed6368ed1511aca07079fe70a9d60"
+TWILIO_AUTH_TOKEN = "316fec5fb23ff179b1838885a3f92c6e"
 TWILIO_VERIFY_SID = "VA87e822fb56587f8d10161cbe045db2bb"

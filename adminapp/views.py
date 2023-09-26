@@ -1,8 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from accounts.models import Account 
-from store.models import Product, ProductImage 
+from orders.models import Order, OrderProduct
+from store.models import Product, ProductImage, Variation
+from cart.models import Coupon 
 from category.models import Category
 from django.views.decorators.cache import cache_control, never_cache
 from django.contrib.auth.decorators import login_required
@@ -42,7 +44,7 @@ def dashboard(request):
             return render(request, 'adminapp/dashboard.html', context)
         else:
             
-            return HttpResponseForbidden("You don't have permission to access this page.")
+            return redirect('home')
     else:
         
         return redirect('login')  
@@ -53,6 +55,8 @@ def admin_logout(request):
     if request.user.is_authenticated:
         logout(request)
     return redirect('index')
+
+#------------------------------------Product-------------------------------------
 
 @login_required
 def admin_products(request):
@@ -71,20 +75,12 @@ def add_product(request):
         category_id = request.POST.get('category')
         description = request.POST.get('description')
         price = request.POST.get('price')
-        stock = request.POST.get('quantity')  
+        quantity = request.POST.get('quantity')
 
-        if not (product_name and category_id and price and stock):
+        if not (product_name and category_id ):
             messages.error(request, "Please provide all required fields.")
             return redirect('add_product')
 
-        try:
-            price = float(price)
-            stock = int(stock)
-            if price <= 0 or stock < 0:
-                raise ValueError
-        except ValueError:
-            messages.error(request, "Price and stock must be positive numbers.")
-            return redirect('add_product')
 
         if Product.objects.filter(product_name=product_name).exists():
             messages.error(request, f"A product with the name '{product_name}' already exists.")
@@ -96,8 +92,8 @@ def add_product(request):
             product_name=product_name,
             category=category,
             description=description,
-            price=price,
-            stock=stock,
+            price = price,
+            quantity = quantity,
             is_available=True
         )
 
@@ -128,21 +124,12 @@ def edit_product(request, product_id):
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
         category_id = request.POST.get('category')
-        description = request.POST.get('description')
+        description = request.POST.get('description')  
         price = request.POST.get('price')
-        quantity = request.POST.get('quantity')  
+        quantity = request.POST.get('quantity')
         
-        if not (product.product_name and category_id and price and quantity):
+        if not (product.product_name and category_id ):
             messages.error(request, "Please provide all required fields.")
-            return redirect('edit_product', product_id=product_id)
-
-        try:
-            price = float(price)
-            quantity = int(quantity)
-            if price <= 0 or quantity < 0:
-                raise ValueError
-        except ValueError:
-            messages.error(request, "Price and quantity must be positive numbers.")
             return redirect('edit_product', product_id=product_id)
 
         if Product.objects.filter(product_name=product.product_name).exclude(pk=product_id).exists():
@@ -154,7 +141,7 @@ def edit_product(request, product_id):
         product.category = category
         product.description = description
         product.price = price
-        product.stock = quantity 
+        product.quantity = quantity
         product.save()
 
         images = request.FILES.getlist('product_images')
@@ -199,7 +186,58 @@ def undo_soft_delete_product(request, product_id):
     product.save()
 
     return redirect('admin_products')
+#------------------------------------Varients---------------------------------------------
 
+def admin_varients(request):
+    # Retrieve all products along with their related variations
+    products = Product.objects.filter(soft_deleted=False)
+
+    context = {
+        'products': products,
+    }
+
+    return render(request, 'adminapp/admin_varients.html', context)
+def add_varients(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product')
+        variation_category = request.POST.get('variation_category')
+        variation_value = request.POST.get('variation_value')
+        
+
+        try:
+            product = Product.objects.get(pk=product_id)
+
+            variation = Variation(
+                product=product,
+                variation_category=variation_category,
+                variation_value= variation_value,
+            )
+            variation.save()
+
+            messages.success(request, "Variants added successfully.")
+            return redirect('admin_varients')
+
+        except (Product.DoesNotExist, ValueError):
+            messages.error(request, "Invalid input. Please check your data.")
+            return redirect('add_varients')
+
+    products = Product.objects.all()
+    context = {'products': products}
+    return render(request, 'adminapp/add_varients.html', context)
+
+def delete_varient(request, varient_id):
+    varient = get_object_or_404(Variation, pk=varient_id)
+    if varient.product:
+        product = varient.product
+        varient.delete()
+        messages.success(request, "Variant deleted successfully.")
+        return redirect('admin_varients')
+    else:
+        messages.error(request, "Unable to delete.")
+        
+    return redirect('admin_varients')
+        
+#------------------------------------Category---------------------------------------------
 @login_required
 def admin_category(request):
     categories = Category.objects.all().order_by('id')  
@@ -281,6 +319,9 @@ def undo_soft_delete_category(request, category_id):
     category.save()
     return redirect('admin_category')
 
+
+#-----------------------------------------User-------------------------------------
+
 @login_required
 def admin_users(request):
     users = Account.objects.all().order_by('id')  
@@ -307,14 +348,62 @@ def unblock_user(request, user_id):
     user.save()
     return redirect('admin_users')
 
+
+#------------------------------Orders---------------------------
+
 @login_required
 def admin_orders(request):
-    return render(request, 'adminapp/admin_orders.html')
+    orders = Order.objects.all()
+    statuses=Order.STATUS
 
+    context = {
+        'orders': orders,
+        'statuses':statuses
+    }
+    return render(request, 'adminapp/admin_orders.html', context)
+
+@login_required
+def manage_orders(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('order_status')
+
+        if new_status == 'Cancelled' and order.status != 'Cancelled':
+            
+            order_products = OrderProduct.objects.filter(order=order)
+            for order_product in order_products:
+                product = order_product.product
+                product.quantity += order_product.quantity
+                product.save()
+        elif new_status != 'Cancelled' and order.status == 'Cancelled':
+            
+            order_products = OrderProduct.objects.filter(order=order)
+            for order_product in order_products:
+                product = order_product.product
+                product.quantity -= order_product.quantity
+                product.save()
+
+        
+        order.status = new_status
+        order.save()
+
+        return redirect('admin_orders')
+
+    context = {
+        'order': order,
+    }
+    return render(request, 'adminapp/manage_orders.html', context)
+
+#------------------------------Coupons---------------------------------
 
 @login_required
 def admin_coupons(request):
-    return render(request, 'adminapp/admin_coupons.html')
+    coupons = Coupon.objects.all()
+    context = {
+        'coupons' : coupons
+    }
+    return render(request, 'adminapp/admin_coupons.html', context)
 
 
 @login_required

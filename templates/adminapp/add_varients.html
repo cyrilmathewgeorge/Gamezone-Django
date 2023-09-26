@@ -1,0 +1,55 @@
+{% extends 'adminapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Add Variants Form -->
+    <div class="row">
+        <div class="col-xl">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Add Variants</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label" for="product">Select Product</label>
+                            <select class="form-select" id="product" name="product" required>
+                                <option value="" disabled selected>Select Product</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}">{{ product.product_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="variation_category">Variation Category</label>
+                            <select class="form-select" id="variation_category" name="variation_category" required>
+                                <option value="product_type">Product Type</option>
+                                
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="variation_value">Refurbished Quality</label>
+                            <select class="form-select" id="variation_value" name="variation_value">
+                                <option value="new" selected>New</option>
+                                <option value="refurbished_excellent">Refurbished:Excellent</option>
+                                <option value="refurbished_good">Refurbished:Good</option>
+                                <option value="refurbished_average">Refurbished:Average</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Variants</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Add Variants Form -->
+
+    <!-- Rest of your content goes here -->
+
+</div>
+
+{% endblock %}

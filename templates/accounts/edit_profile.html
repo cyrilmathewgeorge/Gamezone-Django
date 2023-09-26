@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% include 'includes/alerts.html'%}
+            <h2 class="mb-4">Edit Your Profile</h2>
+            <form action="{% url 'edit_profile' %}" method="POST">
+                {% csrf_token %}
+                <!-- First Name -->
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="{{ user.first_name }}" required>
+                </div>
+                
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="{{ user.last_name }}" required>
+                </div>
+                
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="{{ user.email }}" required>
+                </div>
+                
+                <!-- Phone Number -->
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone_number" name="phone_number" placeholder="{{ user.phone_number }}" required readonly>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary mb-5">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

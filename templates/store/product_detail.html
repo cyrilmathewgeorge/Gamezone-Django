@@ -11,7 +11,7 @@
                 <article class="gallery-wrap">
                     <!-- Zoom Container Start -->
                     <div class="img-big-wrap">
-                        <div class="product-image">
+                        <div class="product-image zoomed-image">
                         <a>
                         <img id="product-img" src="{{ single_product.image.url }}" alt="{{ single_product.product_name }}">
                         </a>
@@ -28,26 +28,42 @@
                     </div>
                 {% endfor %}
             </div>-->
-            <main class="col-md-6 border-left">
+            <main class="col-md-6 border-left">|
+                <form action="{% url 'add_cart' single_product.id %}" method="POST">
+                    {% csrf_token %}
                 <article class="content-body">
                     <h2 class="title">{{ single_product.product_name }}</h2>
                     <div class="mb-3">
-                        <var class="price h4">Price:   ${{ single_product.price }}</var>
+                        <var class="price h4" id="product-price">Price:   ${{ single_product.price }}</var>
                     </div>
                     <p>{{ single_product.description }}</p>
+                        <div class="item-option-select">
+                            <h6>Choose Product Type</h6>
+                                <select name="product_type" class="form-control">
+                                    {% for variation in single_product.variation_set.product_type %}
+                                    {% if variation.variation_category == 'product_type' %}
+                                    <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                        </div>
+                        
+
+                    <br>
                     {% if single_product.stock <= 0%}
                         <h5 class="text-danger"> Out of Stock </h5>
                     {% else %}
-                    <a href="./product-detail.html" class="btn btn-primary">
-                        <span class="text">Add to cart</span>
-                        <i class="fas fa-shopping-cart"></i>
-                    </a>
-                    <a href="./product-detail.html" class="btn btn-primary ml-5">
-                        <span class="text">Buy Now</span>
-                        <i class="fas fa-shopping"></i>
-                    </a>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="text">Add to Cart</span>
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <a href="./product-detail.html" class="btn btn-primary ml-5">
+                            <span class="text">Add to Wishlist</span>
+                            <i class="fas fa-shopping"></i>
+                        </a>
                     {% endif %}
                 </article> <!-- product-info-aside .// -->
+            </form>
             </main> <!-- col.// -->
         </div> <!-- row.// -->
     </div> <!-- card.// -->
@@ -87,18 +103,6 @@
 </div> <!-- container .//  -->
 </section>
 <!-- ========================= SECTION CONTENT END// ========================= -->
-<script>
-    const productImage = document.querySelector('.product-image');
 
-    productImage.addEventListener('mouseover', () => {
-        productImage.style.transform = 'scale(1.5)'; // Increase the scale for zoom
-        productImage.style.transition = 'transform 0.3s'; // Add a smooth transition
-    });
-
-    productImage.addEventListener('mouseout', () => {
-        productImage.style.transform = 'scale(1)'; // Reset the scale
-        productImage.style.transition = 'transform 0.3s'; // Add a smooth transition
-    });
-</script>
 
 {% endblock %}

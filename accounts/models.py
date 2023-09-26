@@ -65,3 +65,20 @@ class Account(AbstractBaseUser):
     
     def has_module_perms(self, add_label):
         return True
+    
+class Address(models.Model):
+    user = models.ForeignKey('Account', on_delete=models.CASCADE)
+    address_type = models.CharField(max_length=10, choices=[('HOME', 'Home'), ('WORK', 'Work')])
+    first_name = models.CharField(max_length=100, default=None)
+    last_name = models.CharField(max_length=100, default=None)
+    email = models.CharField(max_length=100, default=None)
+    phone = models.CharField(max_length=15, default=None)
+    address_line_1 = models.CharField(max_length=100)
+    address_line_2 = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    postal_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.address_type} - {self.first_name} - {self.address_line_1}"

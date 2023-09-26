@@ -70,13 +70,32 @@
         
                         </div> <!-- price-wrap.// -->
                     </div>
-                    <a href="#" class="btn btn-block btn-primary">Add to cart </a>
+                    <a href="{{ product.get_url }}" class="btn btn-block btn-primary">View Detail</a>
                 </figcaption>
             </figure>
         </div> <!-- col.// -->
     {% endfor %}
         
     </div> <!-- row end.// -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if products.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a></li>
+            {% endif %}
+    
+            {% for page_num in products.paginator.page_range %}
+                <li class="page-item {% if products.number == page_num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% endfor %}
+    
+            {% if products.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ products.paginator.num_pages }}">Last</a></li>
+            {% endif %}
+        </ul>
+    </nav>
     
     
     

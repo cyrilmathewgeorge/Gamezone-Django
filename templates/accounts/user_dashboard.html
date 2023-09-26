@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-conten padding-y bg">
+
+<div class="container">
+	<div class="row">
+	<aside class="col-md-3">
+		<!--   SIDEBAR   -->
+		<ul class="list-group">
+			<a class="list-group-item active" href="#">My Profile</a>
+			<a class="list-group-item" href="{% url 'user_address' %}"> My Address </a>
+			<a class="list-group-item" href="{% url 'user_orders' %}"> My Orders </a>
+			<!--<a class="list-group-item" href="#"> Return and refunds </a>
+			<a class="list-group-item" href="#">Settings </a>
+			<a class="list-group-item" href="#"> My Selling Items </a>
+			<a class="list-group-item" href="#"> Received orders </a>-->
+		</ul>
+		<br>
+		<a class="btn btn-light btn-block mb-2" href="{% url 'logout' %}"> <i class="fa fa-power-off"></i> <span class="text">Log out</span> </a> 
+		<!--   SIDEBAR .//END   -->
+	</aside>
+	<main class="col-md-9">
+		{% include 'includes/alerts.html'%}
+		<article class="card">
+		<header class="card-header">
+			<strong class="d-inline-block mr-3">{{ user.first_name }}{{ user.last_name }}</strong>
+		</header>
+		<div class="card-body">
+			<div class="row"> 
+				<div class="col-md-8">
+					<h6 class="text-muted">Profile</h6>
+                    <ul>
+                        <li>First Name: {{ user.first_name }}</li>
+                        <li>Last Name: {{ user.last_name }}</li>
+                        <li>Username: {{ user.username }}</li>
+                        <li>Email: {{ user.email }}</li>
+                        <li>Phone Number: {{ user.phone_number }}</li>
+                    </ul>
+				</div>
+				
+				<!-- Edit Profile Button -->
+				<a class="btn btn-light btn-block mb-2 " href="{% url 'edit_profile' %}">
+    				<i class="fa fa-pencil"></i>
+    				<span class="text">Edit Profile</span>
+				</a>
+
+			<!-- Change Password Button -->
+			<a class="btn btn-light btn-block mb-2" href="{% url 'change_password' %}">
+    			<i class="fa fa-lock"></i>
+    			<span class="text">Change Password</span>
+			</a>
+			</div> <!-- row.// -->
+		</div> <!-- card-body .// -->
+		<div class="table-responsive">
+		</div> <!-- table-responsive .end// -->
+		</article> <!-- order-group.// --> 
+	</main>
+</div> <!-- row.// -->
+</div>
+
+
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+
+{% endblock %}
