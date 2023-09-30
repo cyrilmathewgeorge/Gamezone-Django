@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from cart.models import Cart, CartItem
+from cart.models import Cart, CartItem, Coupon
 from accounts.models import Address
 from store.models import Product, Variation
 from orders.models import Order, OrderProduct, Payment
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-
+from django.http import JsonResponse
+import json
+from datetime import date
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 def _cart_id(request):
@@ -176,11 +178,7 @@ def cart(request):
         grand_total = total + tax
     except ObjectDoesNotExist:
         pass #just ignore
-    
-    if request.method == 'POST':
-        selected_address_id = request.POST.get('selected_address')
-    
-        request.session['selected_address_id'] = selected_address_id    
+      
     
     context = {
         'total': total,
@@ -198,6 +196,7 @@ def checkout(request):
     cart_items = []
     if request.user.is_authenticated:
         addresses = Address.objects.filter(user=request.user)
+        coupons = Coupon.objects.all()
     else:
         addresses = []
         
@@ -217,13 +216,41 @@ def checkout(request):
     except ObjectDoesNotExist: 
         pass #just ignore
 
+    if request.method == 'POST':
+        selected_address_id = request.POST.get('selected_address')
+        #selected_coupon_code = request.POST.get('selected_coupon')
+        request.session['selected_address_id'] = selected_address_id 
+        #request.session['selected_coupon_code'] = selected_coupon_code
+
     context = {
         'total': total,
         'quantity': quantity,
         'cart_items': cart_items,
         'tax'       : tax,
-        'grand_total': grand_total,
+        'grand_total': int(grand_total),
         'addresses': addresses,
+        'coupons'  : coupons,
         }
     return render(request, "store/checkout.html", context)
 
+def apply_coupon(request):
+    if request.method == 'POST':
+        coupon_code = request.POST.get('coupon_code')
+        grand_total_str = request.POST.get('grand_total', '0')  
+        grand_total = float(grand_total_str)
+
+        coupon = get_object_or_404(Coupon, code=coupon_code, is_active=True, expiration_date__gte=date.today())
+        coupon_discount = (coupon.discount / 100) * grand_total
+        final_total = grand_total - coupon_discount
+        
+        # Store the coupon_discount in the session
+        request.session['coupon_discount'] = coupon_discount
+        
+        response_data = {
+            'status': 'success',
+            'coupon_discount': coupon_discount,
+            'final_total': final_total,
+        }
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'status': 'error'})

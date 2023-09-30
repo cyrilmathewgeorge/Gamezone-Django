@@ -19,6 +19,8 @@ class CartItem(models.Model):
     quantity = models.IntegerField()
     is_active = models.BooleanField(default=True)
     
+    
+    
     def sub_total(self):
         
         return self.product.price * self.quantity
@@ -28,6 +30,7 @@ class CartItem(models.Model):
 
 class Coupon(models.Model):
     code = models.CharField(max_length=10, unique=True)
+    discription = models.CharField(max_length=50, blank=True)
     discount = models.PositiveIntegerField(help_text="Discount percentage")
     expiration_date = models.DateField()
     is_active = models.BooleanField(default=True)

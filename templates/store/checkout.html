@@ -37,6 +37,7 @@
                                 <th scope="col" width="120">Quantity</th>
                                 <th scope="col" width="120">Price</th>
                             </tr>
+                            
                         </thead>
                         <tbody>
                             {% for cart_item in cart_items %}
@@ -59,6 +60,7 @@
                                 <td> 
                                     <!-- col.// -->
                                     <label for="">{{ cart_item.quantity}}</label>
+                                </td>
                                 <td> 
                                     <div class="price-wrap"> 
                                         <var class="price">$ {{ cart_item.product.price }}</var> 
@@ -66,11 +68,24 @@
                                 </td>
                             </tr>
                             {% endfor %}
+                            <tr>
+                                <td colspan="2"></td>
+                                <td>
+                                    <div class="price-wrap"> 
+                                        <var class="price" id="grand-total">Grand Total: ${{ grand_total }}</var> 
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <button type="submit" name="submit" class="btn btn-primary btn-block"> Place Order </button>
+                    <div class="form-group">
+                        <label for="coupon_code">Coupon Code:</label>
+                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code">
+                    </div>
+                    <button type="button" class="btn btn-primary text-white py-1 px-3 mt-2 " id="apply-coupon-btn">Apply Coupon</button>
+                    <button type="submit" name="action" value="proceedtopay" class="btn btn-primary text-white py-1 px-3 mt-2 ml-4">Proceed to Pay</button>
                     </form>
-                    <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
+                    <a href="{% url 'store' %}" class="btn btn-light btn-block mt-3">Continue Shopping</a>
                 
                 </div> <!-- card-body.// -->
             </div> <!-- card.// -->
@@ -81,6 +96,49 @@
 </section>
 <!-- ========================= SECTION CONTENT END// ========================= -->
 
+<script>
+    $(document).ready(function () {
+        $('#apply-coupon-btn').click(function (e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            var couponCode = $('[name="coupon_code"]').val();
+            var token = $('[name="csrfmiddlewaretoken"]').val();
+            var grandTotal = '{{ grand_total }}';
+            // AJAX request to apply_coupon view
+            console.log("Coupon Code:", couponCode);
+            console.log("Token:", token);
+            console.log("Grand Total:", grandTotal);
+            $.ajax({
+                method: 'POST',
+                url: '{% url "apply_coupon" %}',
+                data: {
+                    'csrfmiddlewaretoken': token,
+                    'coupon_code': couponCode,
+                    'grand_total': grandTotal 
+                },
+                
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Update coupon discount and other relevant UI elements
+                        // You can use response.coupon_discount and update the UI as needed
+                        $('#coupon-discount').text('$' + response.coupon_discount);
+                        $('#final-total').text('$' + response.final_total);
 
+                         // Update the grand_total element
+        $('#grand-total').text('Grand Total $' + response.final_total); // Update with the final_total
+                        alert('Coupon applied successfully.');
+                    } else {
+                        alert('Invalid coupon code');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while applying the coupon.');
+                }
+            });
+        });
+    
+        // Rest of your JavaScript code
+    });
+    </script>
 
 {% endblock %}

@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from cart.models import CartItem
+from cart.models import CartItem, Coupon
 from accounts.models import Address
 from .forms import OrderForm
 from .models import Order, OrderProduct, Payment
 import datetime
 # Create your views here.
-def place_order(request,total=0, quantity=0):
+def place_order(request, total=0, quantity=0):
     current_user = request.user
     
     cart_items = CartItem.objects.filter(user=current_user)
@@ -14,27 +14,32 @@ def place_order(request,total=0, quantity=0):
     if cart_count <= 0:
         return redirect('store')
     
-    grand_total = 0
+    final_total = 0
     tax = 0
     for cart_item in cart_items:
         total += (cart_item.product.price * cart_item.quantity)
         quantity += cart_item.quantity
     tax = (18 * total) / 100
-    grand_total = total + tax
+    final_total = total + tax
+    
+    
     
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
+            
+            # Retrieve the coupon_discount from the session
+            coupon_discount = request.session.get('coupon_discount', 0)
+            final_total_with_coupon = final_total - coupon_discount
+            
+            
             data = form.save(commit=False)
             data.user = current_user
-            data.order_total = grand_total
+            data.order_total = final_total_with_coupon
             data.tax = tax
             data.ip = request.META.get('REMOTE_ADDR')
             
-            
-            #selected_address_id = request.POST.get('selected_address')
-            #selected_address = Address.objects.get(pk=selected_address_id) 
-            #data.selected_address = selected_address
+        
             selected_address_id = request.session.get('selected_address_id')
             
             if selected_address_id is not None:
@@ -49,7 +54,8 @@ def place_order(request,total=0, quantity=0):
             
             data.save()
             
-            # Generate order number
+                
+            
             yr = int(datetime.date.today().strftime('%Y'))
             dt = int(datetime.date.today().strftime('%d'))
             mt = int(datetime.date.today().strftime('%m'))
@@ -59,8 +65,10 @@ def place_order(request,total=0, quantity=0):
             data.order_number = order_number
             data.save()
             
-            # Clear the cart or mark items as ordered as per your logic
-            #cart_items.delete()
+            
+             # Remove the coupon_discount from the session
+            if 'coupon_discount' in request.session:
+                del request.session['coupon_discount']
             
             order = Order.objects.get(user=current_user, is_ordered=False, order_number=order_number)
             selected_address = order.selected_address
@@ -69,7 +77,8 @@ def place_order(request,total=0, quantity=0):
                 'cart_items' : cart_items,
                 'total' : total,
                 'tax' : tax,
-                'grand_total' : grand_total,
+                
+                'final_total' : final_total_with_coupon,
                 'selected_address': selected_address,
             }
             return render(request, 'orders/payments.html', context)

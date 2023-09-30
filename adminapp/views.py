@@ -405,6 +405,53 @@ def admin_coupons(request):
     }
     return render(request, 'adminapp/admin_coupons.html', context)
 
+def add_coupons(request):
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        discription = request.POST.get('discription')
+        discount = int(request.POST.get('discount'))
+        expiration_date = request.POST.get('expiration_date')
+        is_active = request.POST.get('is_active') == 'on'
+        
+        coupon = Coupon.objects.create(
+            code=code,
+            discription = discription,
+            discount=discount,
+            expiration_date=expiration_date,
+            is_active=is_active
+        )
+        
+        return redirect('admin_coupons'
+                        )
+    return render(request, 'adminapp/add_coupons.html')
+
+def edit_coupons(request, coupon_id):
+    coupon = get_object_or_404(Coupon, pk=coupon_id)
+    
+    if request.method == 'POST':
+        coupon.code = request.POST.get('code')
+        coupon.discription = request.POST.get('discription')
+        coupon.discount = int(request.POST.get('discount'))
+        coupon.expiration_date = request.POST.get('expiration_date')
+        coupon.is_active = request.POST.get('is_active') == 'on'
+        coupon.save()
+        print(request.POST)
+        return redirect('admin_coupons')
+    context={
+        'coupon' : coupon
+    }
+    return render(request, 'adminapp/edit_coupons.html', context)
+
+def delete_coupons(request, coupon_id):
+    try:
+        coupon = Coupon.objects.get(pk=coupon_id)
+    except Coupon.DoesNotExist:
+        return redirect('admin_coupons')
+
+    
+    coupon.delete()
+    messages.success(request, "Coupon deleted successfully.")
+    return redirect('admin_coupons')
 
 @login_required
 def admin_banners(request):
