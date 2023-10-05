@@ -1,6 +1,7 @@
 from django.db import models
 from accounts.models import Account, Address
 from store.models import Product, Variation
+from django.utils import timezone
 # Create your models here.
 
 class Payment(models.Model):
@@ -27,11 +28,11 @@ class Order(models.Model):
     order_number = models.CharField(max_length=20)
     order_total = models.FloatField()
     tax=models.FloatField(null=True)
-    status=models.CharField(max_length=10, choices=STATUS, default=False)
+    status=models.CharField(max_length=10, choices=STATUS, default='New')
     ip =  models.CharField(blank=True,max_length=20)
     is_ordered=models.BooleanField(default=False)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now,)
+    updated_at=models.DateTimeField(default=timezone.now,)
     selected_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     discount=models.FloatField(null=True)
     paymenttype=models.CharField(null=True)

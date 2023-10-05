@@ -40,6 +40,19 @@
                         <li>Phone Number: {{ user.phone_number }}</li>
                     </ul>
 				</div>
+				<!-- Wallet Balance Section -->
+					<div class="container mb-2">
+						<div class="row justify-content-center">
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Wallet Balance</h5>
+										<p><strong>Your current wallet balance:</strong> ${{ user_wallet.balance }}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				
 				<!-- Edit Profile Button -->
 				<a class="btn btn-light btn-block mb-2 " href="{% url 'edit_profile' %}">

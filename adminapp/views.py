@@ -2,13 +2,16 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from accounts.models import Account 
-from orders.models import Order, OrderProduct
+from orders.models import Order, OrderProduct, Payment
 from store.models import Product, ProductImage, Variation
 from cart.models import Coupon 
 from category.models import Category
 from django.views.decorators.cache import cache_control, never_cache
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from datetime import timedelta, datetime
+from django.db.models import Count, Sum
+from decimal import Decimal
 # Create your views here.
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
@@ -37,17 +40,56 @@ def index(request):
 @never_cache
 @login_required
 def dashboard(request):
-    if request.user.is_authenticated:  # Check if the user is logged in
-        if request.user.is_superadmin:
-            # Superadmin can access the dashboard
-            context = {'admin_name': request.user.first_name}  
-            return render(request, 'adminapp/dashboard.html', context)
-        else:
-            
-            return redirect('home')
-    else:
+    if request.user.is_superadmin:
+        if not request.user.is_superadmin:
+            return redirect('index')
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+
+        recent_orders = Order.objects.filter(is_ordered=True).order_by('-created_at')[:10]
+
+        last_year = end_date - timedelta(days=365)
+        yearly_order_counts = (
+            Order.objects
+            .filter(created_at__range=(last_year, end_date), is_ordered=True)
+            .values('created_at__year')
+            .annotate(order_count=Count('id'))
+            .order_by('created_at__year')
+        )
+
+        month = end_date - timedelta(days=30)
+        monthly_earnings = (
+            Order.objects
+            .filter(created_at__range=(month, end_date), is_ordered=True)
+            .aggregate(total_order_total=Sum('order_total'))
+        )['total_order_total']
+
+        monthly_earnings = Decimal(monthly_earnings).quantize(Decimal('0.00'))
+
+        daily_order_counts = (
+            Order.objects
+            .filter(created_at__range=(start_date, end_date), is_ordered=True)
+            .values('created_at__date')
+            .annotate(order_count=Count('id'))
+            .order_by('created_at__date')
+        )
         
-        return redirect('login')  
+        dates = [entry['created_at__date'].strftime('%Y-%m-%d') for entry in daily_order_counts]
+        counts = [entry['order_count'] for entry in daily_order_counts]
+
+        context = {
+            'admin_name': request.user.first_name,
+            'dates': dates,
+            'counts': counts,
+            'orders': recent_orders,
+            'yearly_order_counts': yearly_order_counts,
+            'monthly_earnings': monthly_earnings,
+            'order_count': len(recent_orders),
+        }
+
+        return render(request, 'adminapp/dashboard.html', context)
+    else:
+        return HttpResponseForbidden("You don't have permission to access this page.")
 
 @never_cache
 @login_required
@@ -353,7 +395,7 @@ def unblock_user(request, user_id):
 
 @login_required
 def admin_orders(request):
-    orders = Order.objects.all()
+    orders = Order.objects.filter(is_ordered=True).order_by('-created_at')
     statuses=Order.STATUS
 
     context = {
@@ -394,6 +436,23 @@ def manage_orders(request, order_id):
         'order': order,
     }
     return render(request, 'adminapp/manage_orders.html', context)
+
+def admin_order_details(request, order_id):
+    order_products = OrderProduct.objects.filter(order__user=request.user, order__id=order_id)
+    orders = Order.objects.filter(is_ordered=True, id=order_id)
+    
+    payments = Payment.objects.filter(order__id=order_id)
+
+    for order_product in order_products:
+        order_product.total = order_product.quantity * order_product.product_price
+
+    context = {
+        'order_products': order_products,
+        'orders': orders,
+        'payments': payments,
+    }
+
+    return render(request, 'adminapp/admin_order_details.html', context)
 
 #------------------------------Coupons---------------------------------
 
@@ -453,6 +512,84 @@ def delete_coupons(request, coupon_id):
     messages.success(request, "Coupon deleted successfully.")
     return redirect('admin_coupons')
 
+#---------------------------------Banners--------------------------
+from .models import Carousel, CarouselImage
 @login_required
 def admin_banners(request):
-    return render(request, 'adminapp/admin_banners.html')
+    all_carousels = Carousel.objects.all()
+
+    context = {
+        'all_carousels': all_carousels,
+    }
+    return render(request, 'adminapp/admin_banners.html', context)
+
+def add_banners(request):
+    if request.method == 'POST':
+        
+        title = request.POST.get('title')
+        description = request.POST.get('description_1')  
+        is_active = request.POST.get('is_active')
+
+        if is_active:
+            Carousel.objects.update(is_active=False)
+            
+        new_carousel = Carousel.objects.create(
+            title=title,
+            description=description,
+            is_active=is_active
+        )
+
+        
+        for i in range(1, 4):  
+            image_field_name = f'image_{i}'
+            image = request.FILES.get(image_field_name)
+
+            if image:
+                new_image = CarouselImage(carousel=new_carousel, image=image)
+                new_image.save()
+
+        
+        return redirect('admin_banners')
+    
+    return render(request, 'adminapp/add_banners.html')
+
+def edit_banners(request, carousel_id):
+    
+    carousel = get_object_or_404(Carousel, pk=carousel_id)
+    images = carousel.images.all() 
+    
+    if request.method == 'POST':
+    
+        carousel.title = request.POST['title']
+        carousel.description = request.POST['description']
+        is_active = request.POST.get('is_active', False)  
+        
+        
+         # Deactivate all other banners if is_active is True
+        if is_active:
+            Carousel.objects.exclude(pk=carousel_id).update(is_active=False)
+        
+        carousel.is_active = is_active
+        carousel.save() 
+        # Handle images
+        for image in images:
+                # Update image if a new one is provided
+                image.image = request.FILES.get(f'image_{image.id}', image.image)
+                image.save()
+        
+        
+        return redirect('admin_banners')
+    context = {
+        'carousel' : carousel,
+        'images' : images,
+    }
+    
+    return render(request, 'adminapp/edit_banners.html', context)
+
+def delete_banners(request, carousel_id):
+    
+    banner = get_object_or_404(Carousel, pk=carousel_id)
+    banner.images.all().delete()
+    banner.delete()
+    
+    return redirect('admin_banners')

@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http import JsonResponse
 import json
+from django.contrib import messages
 from datetime import date
 from django.contrib.auth.decorators import login_required
 # Create your views here.
@@ -19,6 +20,10 @@ def _cart_id(request):
 def add_cart(request, product_id):
     current_user=request.user
     product = Product.objects.get(id=product_id)
+    
+    if product.quantity <= 0:
+        # You can handle out of stock scenarios here, e.g., show an error message
+        return redirect('product_detail', product_id=product_id)
     
     # if user is authenticated
     if current_user.is_authenticated:
@@ -50,10 +55,13 @@ def add_cart(request, product_id):
             if product_variation in ex_var_list:
                 #increase cart item quantity
                 index=ex_var_list.index(product_variation)
-                item_id = id[index]
+                item_id = id[index] 
                 item = CartItem.objects.get(product=product, id=item_id)
-                item.quantity +=1
-                item.save()
+                if item.quantity < product.quantity:
+                    item.quantity +=1
+                    item.save()
+                else:
+                    messages.warning(request, 'Product quantity in cart exceeds available quantity.')
             else:
                 item=CartItem.objects.create(product=product,quantity=1, user=current_user)
                 if len(product_variation) > 0:
@@ -241,10 +249,10 @@ def apply_coupon(request):
 
         coupon = get_object_or_404(Coupon, code=coupon_code, is_active=True, expiration_date__gte=date.today())
         coupon_discount = (coupon.discount / 100) * grand_total
-        final_total = grand_total - coupon_discount
+        final_total = grand_total - int(coupon_discount)
         
         # Store the coupon_discount in the session
-        request.session['coupon_discount'] = coupon_discount
+        request.session['coupon_discount'] = int(coupon_discount)
         
         response_data = {
             'status': 'success',

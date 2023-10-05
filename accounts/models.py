@@ -82,3 +82,11 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.address_type} - {self.first_name} - {self.address_line_1}"
+    
+    
+class Wallet(models.Model):
+    user = models.OneToOneField(Account, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"Wallet for {self.user.username}"

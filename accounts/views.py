@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from .forms import RegistrationForm, ProfileEditForm
-from .models import Account
-from orders.models import Order, OrderProduct
+from .models import Account, Wallet
+from orders.models import Order, OrderProduct, Payment
 from django.contrib import messages, auth
 from . import verify
 import re
+from decimal import Decimal
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -247,8 +248,12 @@ def new_password(request, user_id):
 # --------------------------manage profile---------------------------------------
 
 def user_dashboard(request):
-    
-    return render(request, 'accounts/user_dashboard.html')
+    user_wallet, created = Wallet.objects.get_or_create(user=request.user)
+    context = {
+        'user': request.user,
+        'user_wallet': user_wallet,
+    }
+    return render(request, 'accounts/user_dashboard.html', context)
 
 def edit_profile(request):
     user = request.user  # Get the currently logged-in user
@@ -267,6 +272,7 @@ def edit_profile(request):
     context = {'form': form, 'user': user}
     return render(request, 'accounts/edit_profile.html', context)
 
+@login_required
 def change_password(request):
     if request.method == 'POST':
         old_password = request.POST['old_password']
@@ -291,6 +297,7 @@ def change_password(request):
 
 # --------------------------manage addresses---------------------------------------
 from .models import Address
+@login_required
 def user_address(request):
     if request.method == 'POST':
         # Handle the form submission to add a new address
@@ -333,6 +340,7 @@ def user_address(request):
         }
         return render(request, 'accounts/user_address.html', context)
 
+@login_required
 def add_address(request):
     if request.method == 'POST':
         # Get the form fields from the POST data
@@ -370,6 +378,7 @@ def add_address(request):
 
     return render(request, 'accounts/add_address.html')
 
+@login_required
 def edit_address(request, address_id):
     address = get_object_or_404(Address, id=address_id)
     if request.method == 'POST':
@@ -392,28 +401,7 @@ def edit_address(request, address_id):
     }
     return render(request, 'accounts/edit_address.html', context)
 
-def edit_address(request, address_id):
-    address = get_object_or_404(Address, id=address_id)
-    if request.method == 'POST':
-        # Get the updated values from the POST data
-        address.first_name = request.POST.get('first_name')
-        address.last_name = request.POST.get('last_name')
-        address.email = request.POST.get('email')
-        address.phone = request.POST.get('phone')
-        address.address_line_1 = request.POST.get('address_line_1')
-        address.city = request.POST.get('city')
-        address.state = request.POST.get('state')
-        address.country = request.POST.get('country')
-        address.save()
-        # You can add a success message here if you want
-        return redirect('user_address')
-
-    context = {
-        'address': address,
-        'address_id': address_id,
-    }
-    return render(request, 'accounts/edit_address.html', context)
-
+@login_required
 def delete_address(request, address_id):
     try:
         address = Address.objects.get(id=address_id)
@@ -426,8 +414,9 @@ def delete_address(request, address_id):
 
 
 #------------------------User Orders----------------------
+@login_required
 def user_orders(request,):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(is_ordered=True, user=request.user).order_by('-created_at')
 
     # Attach the ordered products for each order
     for order in orders:
@@ -438,12 +427,13 @@ def user_orders(request,):
     }
     return render(request, 'accounts/user_orders.html', context)
 
+@login_required
 def cancel_order_product(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     
     if order.status != 'Cancelled':
         order.status = 'Cancelled'
-        #canceled_amount = Decimal(str(order.order_total))
+        canceled_amount =  Decimal(str(order.order_total))
         order.save()
 
         # Increase view_count for each OrderProduct
@@ -452,8 +442,73 @@ def cancel_order_product(request, order_id):
             product = order_product.product
             product.quantity += order_product.quantity
             product.save()
+            
+        user_wallet = Wallet.objects.get(user=order.user)
+        user_wallet.balance += canceled_amount
+        user_wallet.save()
     
-    return redirect('user_orders')       
+    return redirect('user_orders')   
+
+@login_required
+def order_details(request, order_id):
+    order_products = OrderProduct.objects.filter(order__user=request.user, order__id=order_id)
+    orders = Order.objects.filter(is_ordered=True, id=order_id)
+    
+    payments = Payment.objects.filter(order__id=order_id)
+
+    for order_product in order_products:
+        order_product.total = order_product.quantity * order_product.product_price
+
+    context = {
+        'order_products': order_products,
+        'orders': orders,
+        'payments': payments,
+    }
+
+    return render(request, 'accounts/order_details.html', context)
+
+@login_required
+def order_invoice(request, order_id):
+    user = request.user
+    try:
+        order = Order.objects.get(id=order_id)
+        order_items = OrderProduct.objects.filter(order=order)
+        
+
+        
+
+        payment = Payment.objects.get(order=order)
+        cart_items = CartItem.objects.filter(user=user)
+
+        total = 0
+        tax = 0
+        shipping = 0
+        grand_total = 0  
+
+        subtotal = 0  
+        for order_item in order_items:
+            order_item_total = order_item.product.price * order_item.quantity
+            total = order_item_total  
+            subtotal += order_item_total
+
+        tax = (18 * subtotal) / 100
+        shipping = 100  
+
+        
+        context = {
+            'order': order,
+            'order_items': order_items,
+            'payment': payment,
+            'grand_total': grand_total,
+            'cart_items': cart_items,
+            'total': total,
+            'subtotal': subtotal,
+        }
+
+    except Order.DoesNotExist:
+        messages.error(request, 'Order does not exist.')  
+        return redirect('order_details')  
+    return render(request, 'accounts/order_invoice.html', context)    
 
 @login_required
 def logout(request):

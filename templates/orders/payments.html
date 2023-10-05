@@ -46,9 +46,9 @@
                     <input type="hidden" name="tax" value="{{ tax }}">
                     {% comment %} <input type="hidden" name="order_id" value="{{ order }}"> {% endcomment %}
                     <input type="submit" name="action" value="Cash on Delivery" class="btn btn-primary mb-2"></input>
-                    <input  type="submit" name="action" value="Pay with Razorpay" class="btn btn-info ml-5 mb-2"></input>
 
                 </form>
+                <a id="rzp-button1" class="btn btn-primary btn-lg btn-block">Pay with Razorpay</a>
                 <div class="card">
                   <h5 class="card-header">Review Products</h5>
                   <div class="card-body">
@@ -74,4 +74,33 @@
     </section>
     <!-- ========================= SECTION CONTENT END// ========================= -->
 
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+			<script>
+				var options = {
+					"key": "rzp_test_5k4IbyictmVTdh",
+					"amount": {{ order.order_total|floatformat:2 }} * 100,
+					"currency": "INR",
+					"name": "Game Zone",
+					"description": "Purchase",
+					"image": "https://example.com/your_logo",
+					"order_id": "{{ payment.id }}", 
+					"handler": function (response) {
+						alert("Payment successful!");
+						var orderNumber = "{{ order.order_number }}"; // Get the order number
+						window.location.href = '/orders/confirm_razorpay_payment/' + orderNumber + '/';
+					},
+						
+					"theme": {
+						"color": "#3399cc"
+					}
+				};
+
+				var rzp1 = new Razorpay(options);
+				document.getElementById('rzp-button1').addEventListener('click', function (e) {
+					rzp1.open();
+					e.preventDefault();
+				});
+			</script>
+	<!-- end cart -->
 {% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'adminapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<br>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="card py-3 mb-4">
+        <h5 class="card-header">Add Banners</h5>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Loop to create three sets of input fields for banners -->
+                <div class="mb-3">
+                    <label for="title" class="form-label">Banner Title</label>
+                    <input type="text" class="form-control" id="title" name="title">
+                </div>
+                <div class="mb-3">
+                    <label for="description_{{ i }}" class="form-label">Description {{ i }}</label>
+                    <textarea class="form-control" id="description_{{ i }}" name="description_{{ i }}"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="is_active" class="form-label">Status</label>
+                    <select class="form-select" id="is_active" name="is_active">
+                        <option value="1">Active</option>
+                        <option value="0">Deactivate</option>
+                    </select>
+                </div>
+                {% for i in "123" %}
+                <div class="mb-3">
+                    <label for="image_{{ i }}" class="form-label">Image {{ i }}</label>
+                    <input type="file" class="form-control" id="image_{{ i }}" name="image_{{ i }}">
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Add Banners</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

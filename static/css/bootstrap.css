@@ -1513,7 +1513,7 @@ pre code {
 .table {
   width: 100%;
   margin-bottom: 1rem;
-  color: #343a40;
+  color: #000000;
   background-color: transparent;
 }
 .table th,
@@ -2351,9 +2351,9 @@ textarea.form-control {
   text-align: center;
   vertical-align: middle;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   background-color: transparent;
   border: 1px solid transparent;
   padding: 0.45rem 0.85rem;
@@ -2575,8 +2575,8 @@ fieldset:disabled a.btn {
 
 .btn-dark {
   color: #fff;
-  background-color: #212529;
-  border-color: #212529;
+  background-color: #3167eb;
+  border-color: #3167eb;
 }
 .btn-dark:hover {
   color: #fff;
@@ -2682,7 +2682,7 @@ fieldset:disabled a.btn {
 }
 
 .btn-outline-primary {
-  color: #f1f1f1;
+  color: #2a50f5;
   border-color: #eff0f1;
 }
 .btn-outline-primary:hover {
@@ -10017,7 +10017,7 @@ a.text-gray-light:hover, a.text-gray-light:focus {
 }
 
 .text-muted {
-  color: #ffffff !important;
+  color: #969696 !important;
 }
 
 .text-black-50 {

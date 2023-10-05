@@ -1,0 +1,46 @@
+{% extends 'adminapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<br>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="card py-3 mb-4">
+        <h5 class="card-header">Edit Banner</h5>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="title" class="form-label">Banner Title</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ carousel.title }}">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description">{{ carousel.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="is_active" class="form-label">Status</label>
+                    <select class="form-select" id="is_active" name="is_active">
+                        <option value="1" {% if carousel.is_active %}selected{% endif %}>Active</option>
+                        <option value="0" {% if not carousel.is_active %}selected{% endif %}>Deactivate</option>
+                    </select>
+                </div>
+                <!-- Display already saved images and provide options -->
+                <div class="mb-3">
+                    <label class="form-label">Images</label>
+                    {% for image in images %}
+                        <div class="mb-3">
+                            <label for="image_{{ image.id }}" class="form-label">Image {{ forloop.counter }}</label>
+                            <div>
+                                <img src="{{ image.image.url }}" alt="{{ image.caption }}" style="max-width: 100px; height: auto;">
+                            </div>
+                            <input type="file" class="form-control" id="image_{{ image.id }}" name="image_{{ image.id }}">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -39,6 +39,7 @@
                             <th scope="col">Order Total</th>
                             <th scope="col">Date</th>
                             <th scope="col">Action</th>
+							<th scope="col">Details</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -58,8 +59,12 @@
                                 <p class="text-danger">Order is Cancelled.</p>
                             {% endif %}
                             </td>
+							<td>
+								<a href="{% url 'order_details' order.id %}" class="btn btn-primary" ">Details</a> 
+						  	</td>
                           </tr>
                           {% endfor %}
+						  	
                         </tbody>
                       </table>
 				</div>

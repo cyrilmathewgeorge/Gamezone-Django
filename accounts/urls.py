@@ -26,4 +26,6 @@ urlpatterns = [
     #---------------------User Orders--------------------------
     path('user_orders/', views.user_orders, name='user_orders'),
     path('cancel_order_product/<int:order_id>/', views.cancel_order_product, name='cancel_order_product'),
+    path('order_details/<int:order_id>/', views.order_details, name='order_details'),
+    path('order_invoice/<int:order_id>/', views.order_invoice, name='order_invoice'),
 ]

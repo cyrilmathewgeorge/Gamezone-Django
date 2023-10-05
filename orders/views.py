@@ -5,7 +5,12 @@ from accounts.models import Address
 from .forms import OrderForm
 from .models import Order, OrderProduct, Payment
 import datetime
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.conf import settings
+import razorpay
 # Create your views here.
+@login_required(login_url='user_login')
 def place_order(request, total=0, quantity=0):
     current_user = request.user
     
@@ -84,7 +89,8 @@ def place_order(request, total=0, quantity=0):
             return render(request, 'orders/payments.html', context)
         else:
             return redirect('checkout')
-        
+
+@login_required(login_url='user_login')        
 def payments(request):
     if request.method == 'POST':
         print(request.POST)
@@ -146,8 +152,9 @@ def order_success(request, id):
     try:
         order = get_object_or_404(Order, id=id)
         order_products = OrderProduct.objects.filter(order=order)
-        # Update the order status to 'Completed'
-        order.status = 'Completed'
+        
+        order.status = 'New'
+        #order.payment.status = "Completed"
         order.is_ordered=True
         order.save()
         print(f"Order {order.order_number} status updated to 'Completed'")
@@ -158,4 +165,49 @@ def order_success(request, id):
         'order': order,
         'order_products': order_products,
     }
+    return render(request, 'orders/success.html', context)
+
+@transaction.atomic
+def confirm_razorpay_payment(request, order_number):
+    current_user = request.user
+    try:
+        order = Order.objects.get(order_number=order_number, user=current_user, is_ordered=False)
+    except Order.DoesNotExist:
+        return redirect('order_success')
+    
+    total_amount = order.order_total 
+
+    payment = Payment(
+        user=current_user,
+        payment_method="Razorpay",
+        status="Paid",
+        amount_paid=total_amount,
+    )
+    payment.save()
+
+    order.is_ordered = True
+    order.order_number = order_number
+    order.payment = payment
+    order.save()
+
+    cart_items = CartItem.objects.filter(user=current_user)
+    for cart_item in cart_items:
+        for variation in cart_item.variations.all():
+            order_product = OrderProduct(
+                order=order,
+                payment=payment,
+                user=current_user,
+                product=cart_item.product,
+                variation=variation,
+                product_type=variation.variation_category,
+                quantity=cart_item.quantity,
+                product_price=cart_item.product.price,
+                ordered=True,
+            )
+            order_product.save()
+
+    cart_items.delete()
+
+    context = {'order': order}
+
     return render(request, 'orders/success.html', context)
