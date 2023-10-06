@@ -1,0 +1,78 @@
+{% extends 'adminapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<br>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Hoverable Table rows -->
+    <div class="card py-3 mb-4">
+        <h5 class="card-header">Customer Reviews</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover"  style="height: 400px;">
+                <thead>
+                    <tr>
+                        <th>Review ID</th>
+                        <th>Product</th>
+                        <th>User Name</th>
+                        <th>Review</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Admin Reply</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for review in reviews %}
+                    <tr>
+                        <td><strong>{{ review.id }}</strong></td>
+                        <td>{{ review.product }}</td>
+                        <td>{{ review.user.first_name }}</td>
+                        <td>{{ review.review }}</td>
+                        <td>{{ review.rating }}</td>
+                        <td>{% if review.status %}<span class="badge bg-success">Approved</span>{% else %}<span class="badge bg-danger">Pending</span>{% endif %}</td>
+                        <td>{{ review.created_at }}</td>
+                        <td>{{ review.admin_reply }}</td>
+                        <td>
+                            {% if not review.admin_reply %}
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#replyModal{{ review.id }}">Reply</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--/ Hoverable Table rows -->
+</div>
+
+<!-- Reply Modal -->
+{% for review in reviews %}
+<div class="modal fade" id="replyModal{{ review.id }}" tabindex="-1" role="dialog" aria-labelledby="replyModalLabel{{ review.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="replyModalLabel{{ review.id }}">Reply to Review</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'admin_reply_review' review.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="admin_reply{{ review.id }}">Admin Reply:</label>
+                        <textarea class="form-control" id="admin_reply{{ review.id }}" name="admin_reply" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Reply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<!--/ Reply Modal -->
+
+{% endblock %}

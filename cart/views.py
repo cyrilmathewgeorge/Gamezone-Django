@@ -22,8 +22,8 @@ def add_cart(request, product_id):
     product = Product.objects.get(id=product_id)
     
     if product.quantity <= 0:
-        # You can handle out of stock scenarios here, e.g., show an error message
-        return redirect('product_detail', product_id=product_id)
+            messages.warning(request, 'This product is out of stock.')
+            return redirect('product_detail', product_id=product_id)
     
     # if user is authenticated
     if current_user.is_authenticated:
@@ -81,6 +81,139 @@ def add_cart(request, product_id):
         return redirect('cart')
     # if the user is not authenticated
     else:
+        
+        
+        product_variation = []
+        if request.method == 'POST':
+            for item in request.POST:
+                key = item
+                value=request.POST[key]
+                
+                try:
+                    variations=Variation.objects.get(product=product, variation_category__iexact=key,variation_value__iexact=value)
+                    product_variation.append(variations)
+                except:
+                    pass
+        
+        
+        try:
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+        except Cart.DoesNotExist:
+            cart = Cart.objects.create(
+                cart_id = _cart_id(request)
+            )
+            cart.save()
+        is_cart_item_exists = CartItem.objects.filter(product=product, cart=cart).exists()
+        if is_cart_item_exists:
+            
+            cart_item = CartItem.objects.filter(product=product, cart=cart)
+            
+            ex_var_list = []
+            id = []
+            
+            for item in cart_item:
+                existing_variation = item.variations.all()
+                ex_var_list.append(list(existing_variation))
+                id.append(item.id)
+                
+            if product_variation in ex_var_list:
+                #increase cart item quantity
+                index=ex_var_list.index(product_variation)
+                item_id = id[index]
+                item = CartItem.objects.get(product=product, id=item_id)
+                if item.quantity < product.quantity:
+                    item.quantity +=1
+                    item.save()
+                else:
+                    messages.warning(request, 'Product quantity in cart exceeds available quantity.')
+            else:
+                item=CartItem.objects.create(product=product,quantity=1, cart=cart)
+                if len(product_variation) > 0:
+                    item.variations.clear()
+                    item.variations.add(*product_variation)
+                item.save()
+        else:
+            cart_item = CartItem.objects.create(
+                product = product,
+                quantity = 1,
+                cart = cart,
+            )
+            if len(product_variation) > 0:
+                cart_item.variations.clear()
+                cart_item.variations.add(*product_variation)
+            cart_item.save()
+        return redirect('cart')
+
+#------Add to cart from store -----------------------------------
+def add_from_store(request, product_id):
+    current_user=request.user
+    product = Product.objects.get(id=product_id)
+    
+    if product.quantity <= 0:
+        
+        messages.warning(request, 'This product is out of stock.')
+        return redirect('product_detail', product_id=product_id)
+    
+    # if user is authenticated
+    if current_user.is_authenticated:
+        product_variation = []
+        if request.method == 'POST':
+            for item in request.POST:
+                key = item
+                value=request.POST[key]
+                
+                try:
+                    variations=Variation.objects.get(product=product, variation_category__iexact=key,variation_value__iexact=value)
+                    product_variation.append(variations)
+                    
+                except:
+                    pass
+                    
+        
+        is_cart_item_exists = CartItem.objects.filter(product=product, user=current_user).exists()
+        if is_cart_item_exists:
+            
+            cart_item = CartItem.objects.filter(product=product, user=current_user)
+            
+            ex_var_list = []
+            id = []
+            for item in cart_item:
+                existing_variation = item.variations.all()
+                ex_var_list.append(list(existing_variation))
+                id.append(item.id)
+                
+            if product_variation in ex_var_list:
+                #increase cart item quantity
+                index=ex_var_list.index(product_variation)
+                item_id = id[index] 
+                item = CartItem.objects.get(product=product, id=item_id)
+                if item.quantity < product.quantity:
+                    item.quantity +=1
+                    item.save()
+                    messages.success(request, 'Item added to cart.')
+                else:
+                    messages.warning(request, 'Product quantity in cart exceeds available quantity.')
+            else:
+                item=CartItem.objects.create(product=product,quantity=1, user=current_user)
+                if len(product_variation) > 0:
+                    item.variations.clear()
+                    item.variations.add(*product_variation)
+                item.save()
+        else:
+            cart_item = CartItem.objects.create(
+                product = product,
+                quantity = 1,
+                user = current_user,
+            )
+            
+            if len(product_variation) > 0:
+                cart_item.variations.clear()
+                cart_item.variations.add(*product_variation)
+            cart_item.save()
+            
+        return redirect('store')
+    else:
+        
         product_variation = []
         if request.method == 'POST':
             for item in request.POST:
@@ -118,8 +251,15 @@ def add_cart(request, product_id):
                 index=ex_var_list.index(product_variation)
                 item_id = id[index]
                 item = CartItem.objects.get(product=product, id=item_id)
-                item.quantity +=1
-                item.save()
+                #----------------Any issue with not loged in adding quantity look at this
+                #item.quantity +=1
+                #item.save()
+                if item.quantity < product.quantity:
+                    item.quantity +=1
+                    item.save()
+                    messages.success(request, 'Item added to cart.')
+                else:
+                    messages.warning(request, 'Product quantity in cart exceeds available quantity.')
             else:
                 item=CartItem.objects.create(product=product,quantity=1, cart=cart)
                 if len(product_variation) > 0:
@@ -132,13 +272,16 @@ def add_cart(request, product_id):
                 quantity = 1,
                 cart = cart,
             )
+            
             if len(product_variation) > 0:
                 cart_item.variations.clear()
                 cart_item.variations.add(*product_variation)
             cart_item.save()
-        return redirect('cart')
-
-
+            
+        return redirect('store')
+    
+    
+    
 def remove_cart(request, product_id, cart_item_id):
     product=get_object_or_404(Product,id=product_id)
     try:

@@ -348,6 +348,10 @@ def soft_delete_category(request, category_id):
     category.soft_deleted = True
     category.is_available = False
     category.save()
+    
+    # Soft delete related products
+    Product.objects.filter(category=category).update(soft_deleted=True, is_available=False)
+    
     return redirect('admin_category')
 
 @login_required
@@ -359,6 +363,10 @@ def undo_soft_delete_category(request, category_id):
     category.soft_deleted = False
     category.is_available = True
     category.save()
+    
+    # Undo the soft delete for related products
+    Product.objects.filter(category=category).update(soft_deleted=False, is_available=True)
+    
     return redirect('admin_category')
 
 
@@ -593,3 +601,36 @@ def delete_banners(request, carousel_id):
     banner.delete()
     
     return redirect('admin_banners')
+
+#--------------------------------------Reviews---------------------------
+from store.models import ReviewRating
+
+
+def admin_reviews(request):
+    reviews = ReviewRating.objects.all().order_by('-created_at')  
+    
+    context = {
+        'reviews': reviews,
+    }
+    return render(request, 'adminapp/admin_reviews.html', context)
+
+def admin_reply_review(request, review_id):
+    if request.method == 'POST':
+        admin_reply = request.POST.get('admin_reply')
+        
+        try:
+            review = ReviewRating.objects.get(id=review_id)
+            
+            # Update the admin_reply field
+            review.admin_reply = admin_reply
+            review.save()
+            
+            messages.success(request, 'Reply submitted successfully.')
+        except ReviewRating.DoesNotExist:
+            messages.error(request, 'Review not found.')
+        
+        return redirect('admin_reviews') 
+
+    return redirect('admin_reviews') 
+
+

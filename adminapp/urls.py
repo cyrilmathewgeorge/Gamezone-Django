@@ -48,4 +48,10 @@ urlpatterns = [
     path('add_banners/', views.add_banners, name='add_banners'),
     path('edit_banners/<int:carousel_id>/', views.edit_banners, name='edit_banners'),
     path('delete_banners/<int:carousel_id>/', views.delete_banners, name='delete_banners'),
+    
+    #---------------------------Reviews------------------------------------------
+    
+    path('admin_reviews/', views.admin_reviews, name='admin_reviews'),
+    path('admin_reply_review/<int:review_id>/', views.admin_reply_review, name='admin_reply_review'),
+
     ]
