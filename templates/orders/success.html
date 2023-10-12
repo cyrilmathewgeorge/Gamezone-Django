@@ -1,29 +1,53 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="section-content padding-y bg">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12 text-center">
-                <h1>Payment Successful!</h1>
-                <p>Your order has been placed successfully. Thank you for shopping with us.</p>
-                <h2>Order Details</h2>
-                <p>Order ID: {{ order.order_number }}</p>
-                <p>Order Total: $ {{ order.order_total|floatformat:2 }}</p>
-                <!-- Display order product details -->
-                <h3>Order Products</h3>
-                <ul>
-                    {% for order_product in order_products %}
-                    <li>
-                        Product: {{ order_product.product.title }}
-                        Variation: {% for variation in order_product.variation.all %}{{ variation.variation_value }}{% endfor %}
-                        Quantity: {{ order_product.quantity }}
-                        Price: $ {{ order_product.product_price|floatformat:2 }}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" role="dialog" aria-labelledby="orderSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderSuccessModalLabel">Payment Successful!</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+        <div class="modal-body">
+          <!-- Your order success content here -->
+          <p>Your order has been placed successfully. Thank you for shopping with us.</p>
+          <h2>Order Details</h2>
+          <p>Order ID: {{ order.order_number }}</p>
+          <p>Order Total: ₹ {{ order.order_total|floatformat:2 }}</p>
+          <h3>Order Products</h3>
+          <ul>
+              {% for order_product in order_products %}
+              <li>
+                  Product: {{ order_product.product.title }}
+                  Variation: {% for variation in order_product.variation.all %}{{ variation.variation_value }}{% endfor %}
+                  Quantity: {{ order_product.quantity }}
+                  Price: ₹ {{ order_product.product_price|floatformat:2 }}
+              </li>
+              {% endfor %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
-</section>
+  </div>
+  
+  <script>
+    $(document).ready(function() {
+      $('#orderSuccessModal').modal('show');
+    });
+
+    $(document).ready(function() {
+        $('#orderSuccessModal').modal('show');
+    
+        // Handle the close button click event
+        $('#orderSuccessModal').on('hidden.bs.modal', function () {
+          window.location.href = '/'; 
+        });
+      });
+  </script>
+
 {% endblock %}

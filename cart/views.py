@@ -390,7 +390,16 @@ def apply_coupon(request):
         grand_total_str = request.POST.get('grand_total', '0')  
         grand_total = float(grand_total_str)
 
-        coupon = get_object_or_404(Coupon, code=coupon_code, is_active=True, expiration_date__gte=date.today())
+        try:
+            coupon = Coupon.objects.get(code=coupon_code)
+        except Coupon.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Coupon not found'})
+
+        if not coupon.is_active:
+            return JsonResponse({'status': 'error', 'message': 'Coupon is not active'})
+        
+        if coupon.expiration_date < date.today():
+            return JsonResponse({'status': 'error', 'message': 'Coupon has expired'})
         coupon_discount = (coupon.discount / 100) * grand_total
         final_total = grand_total - int(coupon_discount)
         
@@ -405,3 +414,7 @@ def apply_coupon(request):
         return JsonResponse(response_data)
     else:
         return JsonResponse({'status': 'error'})
+    
+    
+# --------------------Ueing Ajax for Cart Increment function
+

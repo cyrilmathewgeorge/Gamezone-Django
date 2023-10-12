@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from accounts.models import Account 
+from accounts.models import Account, Wallet
 from orders.models import Order, OrderProduct, Payment
 from store.models import Product, ProductImage, Variation
 from cart.models import Coupon 
@@ -162,6 +162,10 @@ def edit_product(request, product_id):
         return redirect('admin_products')
     
     categories = Category.objects.all().order_by('id')
+    existing_images = product.images.all() 
+    
+    # Set existing_category_id based on the product's category
+    existing_category_id = product.category.id
 
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
@@ -187,8 +191,16 @@ def edit_product(request, product_id):
         product.save()
 
         images = request.FILES.getlist('product_images')
+        delete_images_ids = request.POST.getlist('delete_images')
+         # Delete selected images
+        for image_id in delete_images_ids:
+            try:
+                image_to_delete = ProductImage.objects.get(pk=image_id)
+                image_to_delete.delete()
+            except ProductImage.DoesNotExist:
+                pass 
         if images:
-            product.images.all().delete()
+            
 
             for image in images:
                 ProductImage.objects.create(product=product, image=image)
@@ -198,6 +210,8 @@ def edit_product(request, product_id):
     context = {
         'product': product,
         'categories': categories,
+        'existing_images': existing_images,
+        'existing_category_id': existing_category_id,
     }
     return render(request, 'adminapp/edit_product.html', context)
 
@@ -229,7 +243,7 @@ def undo_soft_delete_product(request, product_id):
 
     return redirect('admin_products')
 #------------------------------------Varients---------------------------------------------
-
+@login_required
 def admin_varients(request):
     # Retrieve all products along with their related variations
     products = Product.objects.filter(soft_deleted=False)
@@ -419,21 +433,37 @@ def manage_orders(request, order_id):
     if request.method == 'POST':
         new_status = request.POST.get('order_status')
 
-        if new_status == 'Cancelled' and order.status != 'Cancelled':
-            
+        if new_status == 'Rejected' and order.status != 'Rejected':
+            # Handle order rejection
             order_products = OrderProduct.objects.filter(order=order)
             for order_product in order_products:
                 product = order_product.product
                 product.quantity += order_product.quantity
                 product.save()
-        elif new_status != 'Cancelled' and order.status == 'Cancelled':
             
-            order_products = OrderProduct.objects.filter(order=order)
-            for order_product in order_products:
-                product = order_product.product
-                product.quantity -= order_product.quantity
-                product.save()
-
+            # Update payment status to 'Refunded' and deduct the order_total from the wallet
+            payment = order.payment
+            if payment:
+                payment.status = 'Refunded'
+                payment.save()
+                user_wallet = Wallet.objects.get(user=order.user)
+                user_wallet.balance += Decimal(order.order_total)  # Convert to Decimal
+                user_wallet.save()
+        
+        elif new_status != 'Rejected' and order.status == 'Rejected':
+            # Transition from 'Rejected' to any other status or when new_status is not 'Rejected'
+            # In either case, add the order_total to the wallet
+            user_wallet = Wallet.objects.get(user=order.user)
+            user_wallet.balance -= Decimal(order.order_total)  # Convert to Decimal
+            user_wallet.save()
+            
+            if new_status != 'Rejected':
+                # Handle transition from 'Rejected' to another status
+                # Update payment status to 'Paid'
+                payment = order.payment
+                if payment:
+                    payment.status = 'Paid'
+                    payment.save()
         
         order.status = new_status
         order.save()
@@ -463,10 +493,20 @@ def admin_order_details(request, order_id):
     return render(request, 'adminapp/admin_order_details.html', context)
 
 #------------------------------Coupons---------------------------------
+from django.utils import timezone
 
 @login_required
 def admin_coupons(request):
     coupons = Coupon.objects.all()
+    # Check and update is_active based on expiration_date
+    today = timezone.now().date()
+    for coupon in coupons:
+        if coupon.expiration_date >= today:
+            coupon.is_active = True
+        else:
+            coupon.is_active = False
+        coupon.save()
+    
     context = {
         'coupons' : coupons
     }
@@ -480,16 +520,25 @@ def add_coupons(request):
         expiration_date = request.POST.get('expiration_date')
         is_active = request.POST.get('is_active') == 'on'
         
-        coupon = Coupon.objects.create(
-            code=code,
-            discription = discription,
-            discount=discount,
-            expiration_date=expiration_date,
-            is_active=is_active
-        )
+        # Convert the input expiration_date to a datetime object
+        expiration_date = timezone.datetime.strptime(expiration_date, '%Y-%m-%d').date()
+
+        # Get today's date
+        today = timezone.now().date()
+
+        if expiration_date >= today:
+            coupon = Coupon.objects.create(
+                code=code,
+                discription=discription,
+                discount=discount,
+                expiration_date=expiration_date,
+                is_active=is_active
+            )
+            return redirect('admin_coupons')
+        else:
+            messages.error(request, "Previous dates are not allowed for expiration. Please choose today's date or a future date.")
+            return redirect('add_coupons')
         
-        return redirect('admin_coupons'
-                        )
     return render(request, 'adminapp/add_coupons.html')
 
 def edit_coupons(request, coupon_id):
@@ -499,11 +548,23 @@ def edit_coupons(request, coupon_id):
         coupon.code = request.POST.get('code')
         coupon.discription = request.POST.get('discription')
         coupon.discount = int(request.POST.get('discount'))
-        coupon.expiration_date = request.POST.get('expiration_date')
-        coupon.is_active = request.POST.get('is_active') == 'on'
-        coupon.save()
-        print(request.POST)
-        return redirect('admin_coupons')
+        expiration_date = request.POST.get('expiration_date')
+        is_active = request.POST.get('is_active') == 'on'
+
+        # Convert the input expiration_date to a date object
+        expiration_date = timezone.datetime.strptime(expiration_date, '%Y-%m-%d').date()
+
+        # Get today's date without the time
+        today = timezone.now().date()
+
+        if expiration_date >= today:
+            coupon.expiration_date = expiration_date
+            coupon.is_active = is_active
+            coupon.save()
+            return redirect('admin_coupons')
+        else:
+            messages.error(request, "Previous dates are not allowed for expiration. Please choose today's date or a future date.")
+            return redirect('edit_coupons', coupon_id=coupon_id)
     context={
         'coupon' : coupon
     }
@@ -605,7 +666,7 @@ def delete_banners(request, carousel_id):
 #--------------------------------------Reviews---------------------------
 from store.models import ReviewRating
 
-
+@login_required
 def admin_reviews(request):
     reviews = ReviewRating.objects.all().order_by('-created_at')  
     

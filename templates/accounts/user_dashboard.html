@@ -23,53 +23,51 @@
 		<!--   SIDEBAR .//END   -->
 	</aside>
 	<main class="col-md-9">
-		{% include 'includes/alerts.html'%}
+		{% include 'includes/alerts.html' %}
 		<article class="card">
-		<header class="card-header">
-			<strong class="d-inline-block mr-3">{{ user.first_name }}{{ user.last_name }}</strong>
-		</header>
-		<div class="card-body">
-			<div class="row"> 
-				<div class="col-md-8">
-					<h6 class="text-muted">Profile</h6>
-                    <ul>
-                        <li>First Name: {{ user.first_name }}</li>
-                        <li>Last Name: {{ user.last_name }}</li>
-                        <li>Username: {{ user.username }}</li>
-                        <li>Email: {{ user.email }}</li>
-                        <li>Phone Number: {{ user.phone_number }}</li>
-                    </ul>
-				</div>
-				<!-- Wallet Balance Section -->
-					<div class="container mb-2">
-						<div class="row justify-content-center">
-							<div class="col-md-6">
-								<div class="card">
-									<div class="card-body">
-										<h5 class="card-title">Wallet Balance</h5>
-										<p><strong>Your current wallet balance:</strong> ${{ user_wallet.balance }}</p>
-									</div>
-								</div>
+			<header class="card-header">
+				<h2 class="d-inline-block mr-3">{{ user.first_name }} {{ user.last_name }}</h2>
+			</header>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-8">
+						<h4 class="text-muted">Profile</h4>
+						<ul class="list-unstyled">
+							<li><strong>First Name:</strong> {{ user.first_name }}</li>
+							<li><strong>Last Name:</strong> {{ user.last_name }}</li>
+							<li><strong>Username:</strong> {{ user.username }}</li>
+							<li><strong>Email:</strong> {{ user.email }}</li>
+							<li><strong>Phone Number:</strong> {{ user.phone_number }}</li>
+						</ul>
+					</div>
+	
+					<!-- Wallet Balance Section -->
+					<div class="col-md-4">
+						<div class="card mb-2">
+							<div class="card-body">
+								<h4 class="card-title">Wallet Balance</h4>
+								<p class="mb-0"><strong>Your current wallet balance:</strong> ₹{{ user_wallet.balance }}</p>
 							</div>
 						</div>
 					</div>
-				
+				</div> <!-- row.// -->
+	
 				<!-- Edit Profile Button -->
-				<a class="btn btn-light btn-block mb-2 " href="{% url 'edit_profile' %}">
-    				<i class="fa fa-pencil"></i>
-    				<span class="text">Edit Profile</span>
+				<a class="btn btn-light btn-block mb-2" href="{% url 'edit_profile' %}">
+					<i class="fa fa-pencil"></i>
+					<span class="text">Edit Profile</span>
 				</a>
-
-			<!-- Change Password Button -->
-			<a class="btn btn-light btn-block mb-2" href="{% url 'change_password' %}">
-    			<i class="fa fa-lock"></i>
-    			<span class="text">Change Password</span>
-			</a>
-			</div> <!-- row.// -->
-		</div> <!-- card-body .// -->
-		<div class="table-responsive">
-		</div> <!-- table-responsive .end// -->
-		</article> <!-- order-group.// --> 
+	
+				<!-- Change Password Button -->
+				<a class="btn btn-light btn-block mb-2" href="{% url 'change_password' %}">
+					<i class="fa fa-lock"></i>
+					<span class="text">Change Password</span>
+				</a>
+			</div> <!-- card-body .// -->
+			<div class="table-responsive">
+				<!-- Include any additional content or tables as needed -->
+			</div> <!-- table-responsive .end// -->
+		</article> <!-- order-group.// -->
 	</main>
 </div> <!-- row.// -->
 </div>

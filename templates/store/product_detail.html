@@ -36,7 +36,7 @@
                 <article class="content-body">
                     <h2 class="title">{{ single_product.product_name }}</h2>
                     <div class="mb-3">
-                        <var class="price h4" id="product-price">Price:   ${{ single_product.price }}</var>
+                        <var class="price h4" id="product-price">Price:   RS&nbsp;{{ single_product.price }}</var>
                     </div>
                     <p>{{ single_product.description }}</p>
                         <div class="item-option-select">
@@ -192,5 +192,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+
 
 {% endblock %}

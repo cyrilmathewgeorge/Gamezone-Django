@@ -67,7 +67,7 @@
                     <div class="fix-height">
                         <a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
                         <div class="price-wrap mt-2">
-                            <span class="price">{{ product.price }}</span>
+                            <span class="price">₹{{ product.price }}</span>
         
                         </div> <!-- price-wrap.// -->
                     </div>
@@ -78,7 +78,7 @@
     {% endfor %}
         
     </div> <!-- row end.// -->
-    <nav aria-label="Page navigation">
+    <nav aria-label="Page navigation" class="d-flex justify-content-center align-items-center">
         <ul class="pagination">
             {% if products.has_previous %}
                 <li class="page-item"><a class="page-link" href="?page=1">First</a></li>

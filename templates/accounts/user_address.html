@@ -24,9 +24,13 @@
 	</aside>
 	<div class="container">
         <div class="row">
-            <div class="col-md-12">
-                <h5>Manage Addresses</h5>
-                <a href="{% url 'add_address' %}" class="btn btn-primary mb-3">Add Address</a>
+            <article class="card">
+                <header class="card-header">
+                    <h5>Manage Addresses</h5>
+                    <a href="{% url 'add_address' %}" class="btn btn-primary mb-3">Add Address</a>
+                </header>
+            
+               
 
                 <table class="table table-hover">
                     <thead>
@@ -35,7 +39,7 @@
                             <th>last Name</th>
                             <th>email</th>
                             <th>Phone</th>
-                            <th>address_1</th>
+                            <th>Address</th>
                             {% comment %} <th>address_2</th> {% endcomment %}
                             <th>City</th>
                             <th>State</th>
@@ -64,8 +68,8 @@
                         {% endfor %}
                     </tbody>
                 </table>
-</div> <!-- row.// -->
-</div>
+            </article>
+</div><!-- row.// -->
 
 
 </section>

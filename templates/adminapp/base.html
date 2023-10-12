@@ -76,7 +76,9 @@
     </div>
     <!-- / Layout wrapper -->
 
-
+ <!--Custom css for alerts their is some issue but it works -->
+  <link rel="stylesheet" href="{% static 'adminapp/css/custom.css' %}" />
+ 
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
@@ -93,11 +95,17 @@
 
     <!-- Main JS -->
     <script src="{% static 'adminapp/js/main.js' %}"></script>
+    
+
 
     <!-- Page JS -->
     <script src="{% static 'adminapp/js/dashboards-analytics.js' %}"></script>
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!--The below script file is related to that alert isuue but it works-->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}" type="text/javascript"></script>
+
+    
   </body>
 </html>

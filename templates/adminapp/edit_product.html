@@ -22,21 +22,31 @@
                   <input type="text" class="form-control" id="product_name" name="product_name" value="{{ product.product_name }}" required>
               </div>
               <div class="mb-3">
-                  <label class="form-label" for="product_images">Upload Image</label>
-                  <input type="file" class="form-control" id="product_images" name="product_images" accept="image/*" multiple required>
-                  {% if product.product_images %}
-                    <img src="{{ product.product_images.url }}" alt="Product Image" class="img-fluid" style="width:100px">
-                  {% endif %}
-              </div>
+                <label class="form-label">Existing Images</label>
+                {% for image in existing_images %}
+                    <div class="mb-2">
+                        <img src="{{ image.image.url }}" alt="Product Image" class="img-fluid" style="width:100px">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="delete_images" value="{{ image.id }}"> Delete
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="product_images">Upload New Images</label>
+                <input type="file" class="form-control" id="product_images" name="product_images" accept="image/*" multiple>
+            </div>
               <div class="mb-3">
-                  <label class="form-label" for="category">Category</label>
-                  <select class="form-select" id="category" name="category" required>
-                      <option value="" disabled selected>Select Category</option>
-                      {% for category in categories %}
-                          <option value="{{ category.id }}">{{ category.category_name }}</option>
-                      {% endfor %}
-                  </select>
-              </div>
+                <label class="form-label" for="category">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="" disabled>Select Category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id == existing_category_id %}selected{% endif %}>
+                            {{ category.category_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
               <div class="mb-3">
                 <label class="form-label" for="basic-default-company">Description</label>
                 <textarea id="basic-default-message" class="form-control" name="description">{{ product.description }}</textarea>

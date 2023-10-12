@@ -164,7 +164,7 @@ def login(request):
                     nextPage = params['next']
                     return redirect(nextPage)
             except:
-                return redirect('index')
+                return redirect('home')
 
             return redirect('home')
         else:
@@ -442,6 +442,12 @@ def cancel_order_product(request, order_id):
             product = order_product.product
             product.quantity += order_product.quantity
             product.save()
+            
+        # Update payment status to 'Refunded'
+        payment = order.payment
+        if payment:
+            payment.status = 'Refunded'
+            payment.save()
             
         user_wallet = Wallet.objects.get(user=order.user)
         user_wallet.balance += canceled_amount

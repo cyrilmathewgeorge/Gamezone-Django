@@ -22,6 +22,7 @@ class Order(models.Model):
         ('Accepted','Accepted'),
         ('Completed','Completed'),
         ('Cancelled','Cancelled'),
+        ('Rejected','Rejected'),
     )
     user=models.ForeignKey(Account,on_delete=models.SET_NULL,null=True)
     payment=models.ForeignKey(Payment,on_delete=models.SET_NULL,blank=True,null=True)

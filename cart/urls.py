@@ -9,6 +9,9 @@ urlpatterns = [
     path("remove_cart_item/<int:product_id>,<int:cart_item_id>/",views.remove_cart_item,name='remove_cart_item'),
     path("checkout/",views.checkout,name='checkout'),
     
-    
     path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
+    
+    #---------------------------Ajax-------------------------------
+   
+
 ]

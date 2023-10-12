@@ -66,7 +66,7 @@
         </td>
         <td> 
             <div class="price-wrap"> 
-                <var class="price">$ {{ cart_item.product.price }}</var> 
+                <var class="price">₹ {{ cart_item.product.price }}</var> 
                <!-- <small class="text-muted">$ {{ cart_item.product.price }} each </small> -->
             </div> <!-- price-wrap .// -->
         </td>
@@ -86,15 +86,15 @@
             <div class="card-body">
                 <dl class="dlist-align">
                   <dt>Total price:</dt>
-                  <dd class="text-right">${{ total }}</dd>
+                  <dd class="text-right">₹{{ total }}</dd>
                 </dl>
                 <dl class="dlist-align">
                   <dt>Tax:</dt>
-                  <dd class="text-right">${{ tax }}</dd>
+                  <dd class="text-right">₹{{ tax }}</dd>
                 </dl>
                 <dl class="dlist-align">
                   <dt>Grand Total:</dt>
-                  <dd class="text-right text-dark b"><strong>${{ grand_total }}</strong></dd>
+                  <dd class="text-right text-dark b"><strong>₹{{ grand_total }}</strong></dd>
                 </dl>
                 <hr>
                 <p class="text-center mb-3">
@@ -115,5 +115,36 @@
     </div> <!-- container .//  -->
     </section>
     <!-- ========================= SECTION CONTENT END// ========================= -->
-
+    <script>
+        $(document).ready(function() {
+          $('.plus-btn, .minus-btn').click(function(event) {
+            event.preventDefault();
+            var formElement = $(this).closest('form');
+            var inputElement = formElement.find('input.form-control');
+            var quantity = parseInt(inputElement.val());
+        
+            if ($(this).hasClass('plus-btn')) {
+              inputElement.val(quantity + 1);
+            } else if ($(this).hasClass('minus-btn') && quantity > 1) {
+              inputElement.val(quantity - 1);
+            }
+        
+            updateCartItem(formElement);
+          });
+        
+          function updateCartItem(formElement) {
+            $.ajax({
+              type: formElement.attr('method'),
+              url: formElement.attr('action'),
+              data: formElement.serialize(),
+              success: function(response) {
+                // Update any relevant parts of your page here, e.g. total, tax, grand_total
+              },
+              error: function(xhr, status, error) {
+                console.error(error);
+              }
+            });
+          }
+        });
+        </script>
 {% endblock %}

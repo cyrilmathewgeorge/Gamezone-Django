@@ -8,6 +8,7 @@
     <!-- ============================ COMPONENT 1 ================================= -->
     <div class="row">
         <aside class="col-lg-6">
+            {% include 'includes/alerts.html' %}
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-4">Billing Address</h4>
@@ -74,7 +75,7 @@
                                 </td>
                                 <td> 
                                     <div class="price-wrap"> 
-                                        <var class="price">$ {{ cart_item.product.price }}</var> 
+                                        <var class="price">₹ {{ cart_item.product.price }}</var> 
                                     </div> <!-- price-wrap .// -->
                                 </td>
                             </tr>
@@ -83,7 +84,7 @@
                                 <td colspan="2"></td>
                                 <td>
                                     <div class="price-wrap"> 
-                                        <var class="price" id="grand-total">Grand Total: ${{ grand_total }}</var> 
+                                        <var class="price" id="grand-total">Grand Total: ₹{{ grand_total }}</var> 
                                     </div>
                                 </td>
                             </tr>

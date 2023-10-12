@@ -133,6 +133,7 @@
                                         <strong>Payment Method:</strong>
                                         <br>
                                         {{order.payment.payment_method}}<br>
+                                        {{order.payment.status}}<br>
                                         <br>
                                     </address>
                                 </div>
@@ -200,7 +201,7 @@
                                                     <strong>Discount</strong>
                                                 </td>
                                                 <td class="text-right">
-                                                    {% if order.discount > 0 %}
+                                                    {% if order.discount %}
                                                     <strong>%{{ order.discount }}</strong> 
                                                     {% else %}
                                                     <strong>₹0.00</strong>
