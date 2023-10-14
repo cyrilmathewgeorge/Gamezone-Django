@@ -64,7 +64,7 @@ def dashboard(request):
             .aggregate(total_order_total=Sum('order_total'))
         )['total_order_total']
 
-        #monthly_earnings = Decimal(monthly_earnings).quantize(Decimal('0.00'))
+        monthly_earnings = Decimal(monthly_earnings).quantize(Decimal('0.00'))
 
         daily_order_counts = (
             Order.objects
