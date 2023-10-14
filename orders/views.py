@@ -137,10 +137,10 @@ def payments(request):
                     )
 
                 # Update the product's quantity or perform any other necessary updates
-                cart_item.product.quantity -= cart_item.quantity
-                cart_item.product.save()
-                cart_items.delete()
-            
+            cart_item.product.quantity -= cart_item.quantity
+            cart_item.product.save()
+            cart_items.delete()
+        
             
 
             return redirect("order_success", id=order.id)
@@ -157,6 +157,9 @@ def order_success(request, id):
         #order.payment.status = "Completed"
         order.is_ordered=True
         order.save()
+        if order.payment:
+            order.payment.status = "Paid"
+            order.payment.save()
         print(f"Order {order.order_number} status updated to 'Completed'")
     except Exception as e:
         # Log any exceptions that occur during the update

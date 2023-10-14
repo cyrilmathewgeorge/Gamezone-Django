@@ -256,14 +256,32 @@ def user_dashboard(request):
     return render(request, 'accounts/user_dashboard.html', context)
 
 def edit_profile(request):
-    user = request.user  # Get the currently logged-in user
-
+    #user = request.user  # Get the currently logged-in user
+    user = Account.objects.get(pk=request.user.pk)
+    print("User ID:", user.id)
+    print("User Phone Number:", user.phone_number)
+    old_phone_number = user.phone_number
     if request.method == 'POST':
         form = ProfileEditForm(request.POST, instance=user)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Profile updated successfully')
-            return redirect('user_dashboard')
+            new_phone_number = form.cleaned_data.get('phone_number')
+            
+            print(new_phone_number, old_phone_number, user.phone_number)
+            if new_phone_number != old_phone_number:
+                print(new_phone_number, old_phone_number)
+                otp = verify.generate_otp()
+                verify.send_otp(new_phone_number, otp)
+                
+                request.session['profile_verification'] = {
+                    "otp" : otp,
+                    "new_phone_number" : new_phone_number
+                }
+                return redirect('profile_verification')
+            else:
+                
+                form.save()
+                messages.success(request, 'Profile updated successfully')
+                return redirect('user_dashboard')
         else:
             messages.error(request, 'Profile update failed. Please correct the errors below.')
     else:
@@ -271,6 +289,34 @@ def edit_profile(request):
 
     context = {'form': form, 'user': user}
     return render(request, 'accounts/edit_profile.html', context)
+
+def profile_verification(request):
+    
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        stored_data = request.session.get('profile_verification')
+        
+        if stored_data and 'otp' in stored_data:
+            if verify.check_otp(stored_data["new_phone_number"], entered_otp):
+                new_phone_number = stored_data.get('new_phone_number')
+                
+                user = request.user
+                user.phone_number = new_phone_number
+                user.save()
+                
+                del request.session['profile_verification']
+                
+                messages.success(request, 'Phone number updated successfully')
+                return redirect('user_dashboard')
+            else:
+                messages.error(request, 'Invalid OTP. Please try again.')
+                return redirect('profile_verification')
+        else:
+            messages.error(request, 'Session data is missing. Please retry the profile update process.')
+            return redirect('edit_profile')
+    
+    return render(request, 'accounts/profile_verification.html')
+
 
 @login_required
 def change_password(request):

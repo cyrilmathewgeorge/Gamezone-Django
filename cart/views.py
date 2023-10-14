@@ -373,6 +373,10 @@ def checkout(request):
         request.session['selected_address_id'] = selected_address_id 
         #request.session['selected_coupon_code'] = selected_coupon_code
 
+    if not addresses:
+        messages.warning(request, "You must include an address to place an order.")
+        return redirect('add_address')
+    
     context = {
         'total': total,
         'quantity': quantity,

@@ -67,7 +67,7 @@ class Account(AbstractBaseUser):
         return True
     
 class Address(models.Model):
-    user = models.ForeignKey('Account', on_delete=models.CASCADE)
+    user = models.ForeignKey(Account, on_delete=models.CASCADE)
     address_type = models.CharField(max_length=10, choices=[('HOME', 'Home'), ('WORK', 'Work')])
     first_name = models.CharField(max_length=100, default=None)
     last_name = models.CharField(max_length=100, default=None)

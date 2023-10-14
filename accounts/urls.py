@@ -16,6 +16,7 @@ urlpatterns = [
     path('user_dashboard/',views.user_dashboard, name='user_dashboard'),
     path('edit_profile/', views.edit_profile, name='edit_profile'),
     path('change_password/', views.change_password, name='change_password'),
+    path('profile_verification/', views.profile_verification, name='profile_verification'),
     
     #---------------------User Address----------------------
     path('user_address/', views.user_address, name='user_address'),

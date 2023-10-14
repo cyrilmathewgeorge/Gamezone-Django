@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+6p69%!u(uhc+3o02*2)^x(u07(kgtm1ye9yd(+w!upuun&hdn'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -86,9 +88,9 @@ AUTH_USER_MODEL = 'accounts.Account'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gamezone',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'NAME': config('NAME'),
+        'USER': config('USER'),
+        'PASSWORD': config('PASSWORD'),
         'HOST': 'localhost',  
         'PORT': '5432',
     }
@@ -121,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Aisa/Kolkata'
 
 USE_I18N = True
 
@@ -152,9 +154,9 @@ MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
 
-TWILIO_ACCOUNT_SID = "AC93c1b126bdec0ba0665c8ae09d021836"
-TWILIO_AUTH_TOKEN = "316fec5fb23ff179b1838885a3f92c6e"
-TWILIO_VERIFY_SID = "VA87e822fb56587f8d10161cbe045db2bb"
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+TWILIO_VERIFY_SID = config('TWILIO_VERIFY_SID')
 
-key = 'rzp_test_5k4IbyictmVTdh'
-key_secret = 'ELQM3G7vy01lysJPeyL244om'
+key = config('key')
+key_secret = config('key_secret')
