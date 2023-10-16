@@ -195,7 +195,7 @@ def edit_product(request, product_id):
 
         images = request.FILES.getlist('product_images')
         delete_images_ids = request.POST.getlist('delete_images')
-         # Delete selected images
+        # Delete selected images
         for image_id in delete_images_ids:
             try:
                 image_to_delete = ProductImage.objects.get(pk=image_id)
@@ -203,8 +203,6 @@ def edit_product(request, product_id):
             except ProductImage.DoesNotExist:
                 pass 
         if images:
-            
-
             for image in images:
                 ProductImage.objects.create(product=product, image=image)
             

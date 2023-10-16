@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from .models import Product, Variation, ReviewRating
+from .models import Product, Variation, ReviewRating, ProductImage
 # Register your models here.
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('product_name', 'category', 'price', 'modified_date', 'is_available')
@@ -33,3 +33,4 @@ class VariationAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Variation, VariationAdmin)
 admin.site.register(ReviewRating)
+admin.site.register(ProductImage)

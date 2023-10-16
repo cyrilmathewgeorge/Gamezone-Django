@@ -46,6 +46,9 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image of {self.product.product_name}"
+    
+    
+    
 
 class Variation(models.Model):
     product=models.ForeignKey(Product,on_delete=models.CASCADE)
