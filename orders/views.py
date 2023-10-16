@@ -196,21 +196,28 @@ def confirm_razorpay_payment(request, order_number):
     cart_items = CartItem.objects.filter(user=current_user)
     for cart_item in cart_items:
         for variation in cart_item.variations.all():
-            order_product = OrderProduct(
-                order=order,
-                payment=payment,
-                user=current_user,
-                product=cart_item.product,
-                variation=variation,
-                product_type=variation.variation_category,
-                quantity=cart_item.quantity,
-                product_price=cart_item.product.price,
-                ordered=True,
-            )
-            order_product.save()
+            OrderProduct.objects.create(
+                    order=order,
+                    payment=payment,  
+                    user=current_user,
+                    product=cart_item.product,
+                    variation=variation,
+                    product_type=variation.variation_category,  
+                    quantity=cart_item.quantity,
+                    product_price=cart_item.product.price,
+                    ordered=True,  
+                )
+            
 
+    cart_item.product.quantity -= cart_item.quantity
+    cart_item.product.save()
     cart_items.delete()
 
-    context = {'order': order}
+    order_products = OrderProduct.objects.filter(order=order)
+    
+    context = {
+        'order': order,
+        'order_products': order_products,
+        }
 
     return render(request, 'orders/success.html', context)
